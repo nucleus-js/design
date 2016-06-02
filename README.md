@@ -49,8 +49,70 @@ This file will be run in the JS runtime with a global `nucleus` injected.
 ```js
 // main.js
 // Bootstrap the node environment with the dofile builtin.
-// This is a combination of nucleus.eval and nucleus.readfile.
+// This is a combination of `nucleus.eval` and `nucleus.readfile`.
 nucleus.dofile('node_modules/node-core/bootstrap.js')(function (require, module) {
   // node code goes here
 });
 ```
+
+## JS `nucleus` Interface
+
+This global is the only thing custom injected into the JavaScript global scope.
+It provides access to all the C bindings in nucleus as well as some utility
+functions to work with the bundle resources and the JS runtime.
+
+### nucleus.args
+
+This will be the command-line args that were passed to the application
+
+### nucleus.exit(code)
+
+This allows exiting the process with an optional exit code.  If this is never
+called and the main script returns, then the process exits with 0.
+
+### nucleus.config
+
+A map of versions of nucleus and it's compiled in bindings.
+
+### nucleus.readfile(path) -> data
+
+This will load a file as data.  Note that data will be one byte per character so
+that it's binary safe, but ASCII data will be usable as a string.  If you wish
+to decode something that's UTF-8 encoded as a unicode string, do the following
+[trick](http://ecmanaut.blogspot.com/2006/07/encoding-decoding-utf8-in-javascript.html).
+
+```js
+var code = decodeURIComponent(escape(nucleus.readfile("myfile.js")));
+```
+
+If the path is not a file, data will be `false`.
+
+### nucleus.scandir(path, onEntry(name, type)) -> exists
+
+This iterates through a directory calling your callback with name and type for
+each entry.  It will return with `true` if the path was a folder and `false` if
+not.
+
+The `type` parameter in the callback is one of `"file"`, or `"directory"`
+usually.
+
+### nucleus.pathjoin(...parts) -> path
+
+Basic path-join to be used for paths to `scandir` and `readfile`.
+
+### nucleus.base
+
+Base is the base path of the resource bundle.  If running from a directory it
+will be the directory path, if it's a zip, it will be path to the zip.
+
+### nucleus.uv
+
+This will be bindings to libuv exposed to JavaScript.
+
+### nucleus.miniz
+
+Bindings to miniz that's used for the bundle logic.
+
+### nucleus...
+
+Other bindings...
