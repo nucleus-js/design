@@ -2,7 +2,7 @@
 Nucleus is a specification for a minimal JS runtime that makes it fun to create
 your own platforms.
 
-# Command Line Interface
+## Command Line Interface
 
 ```sh
 # Show version and build options
@@ -26,4 +26,31 @@ chmod + x app
 
 # Build app with linked nucleus in shebang
 nucleus app.zip --linked --output app
+```
+
+## Basic Application Skeleton
+
+This is a sample application that's using a node.js style require system.
+
+```
+app
+├── main.js
+└── node_modules
+    └── node-core
+        ├── bootstrap.js
+        .
+        .
+        .
+```
+
+The only thing special is there must be an `main.js` at the root of the tree.  
+This file will be run in the JS runtime with a global `nucleus` injected.
+
+```js
+// main.js
+// Bootstrap the node environment with the dofile builtin.
+// This is a combination of nucleus.eval and nucleus.readfile.
+nucleus.dofile('node_modules/node-core/bootstrap.js')(function (require, module) {
+  // node code goes here
+});
 ```
