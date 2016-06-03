@@ -180,49 +180,59 @@ static duk_ret_t read_from_zip(duk_context *ctx) {
   }
   return 1;
 }
+
 static duk_ret_t scan_from_zip(duk_context *ctx) {
   canonicalize(ctx);
   duk_require_function(ctx, 1);
-  const char* path = duk_get_string(ctx, 0);
+  const char* input = duk_get_string(ctx, 0);
   int index = -1;
-  int pathlen = strlen(path);
-  if (pathlen) {
-    index = mz_zip_reader_locate_file(&zip, path, 0, 0);
+  if (*input) {
+    duk_dup(ctx, 0);
+    duk_push_string(ctx, "/");
+    duk_concat(ctx, 2);
+    input = duk_get_string(ctx, -1);
+    duk_pop(ctx);
+    index = mz_zip_reader_locate_file(&zip, input, 0, 0);
     if (index < 0) {
       duk_push_false(ctx);
       return 1;
     }
-    printf("Index %d\n", index);
     if (!mz_zip_reader_is_file_a_directory(&zip, index)) {
-      duk_error(ctx, DUK_ERR_ERROR, "%s is not a directory", path);
+      duk_error(ctx, DUK_ERR_ERROR, "%s is not a directory", input);
       return 0;
     }
   }
+  int pathlen = strlen(input);
+  char *path = malloc(pathlen + 1);
+  memcpy(path, input, pathlen + 1);
+
   int num = mz_zip_reader_get_num_files(&zip);
   char entry[PATH_MAX];
   while (++index < num) {
     mz_uint size = mz_zip_reader_get_filename(&zip, index, entry, PATH_MAX);
-    if (strncmp(path, entry, pathlen)) break;
-    char *name = &(entry[pathlen]);
-    size -= pathlen;
-    if (name[0] == '/') {
-      name++;
-      size--;
+    if (strncmp(path, entry, pathlen)) {
+      break;
     }
-    char* match = strchr(name, '/');
-    if (match && match[1]) break;
+    int offset = pathlen;
+    if (entry[offset] == '/') {
+      offset++;
+    }
+    size -= offset + 1;
+    char* match = strchr(entry + offset, '/');
+    if (match && match[1]) continue;
     duk_dup(ctx, 1);
-    if (name[size - 2] == '/') {
-      duk_push_lstring(ctx, name + pathlen, size - pathlen - 2);
+    if (entry[offset + size - 1] == '/') {
+      duk_push_lstring(ctx, entry + offset, size - 1);
       duk_push_string(ctx, "directory");
     }
     else {
-      duk_push_lstring(ctx, name + pathlen, size - pathlen - 1);
+      duk_push_lstring(ctx, entry + offset, size);
       duk_push_string(ctx, "file");
     }
     duk_call(ctx, 2);
     duk_pop(ctx);
   }
+  free(path);
   duk_push_true(ctx);
   return 1;
 }

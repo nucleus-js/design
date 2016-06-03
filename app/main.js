@@ -5,8 +5,11 @@ p(p);
 print("\nTesting pretty printer by dumping nucleus");
 p(nucleus);
 
-print("\nTesting scandir");
+print("\nTesting scandir at root");
 p(nucleus.scandir('.', p));
+
+print("\nTesting scandir at deps");
+p(nucleus.scandir('deps', p));
 
 print("\nTest various buffer types");
 p(Duktape.Buffer("test"));
