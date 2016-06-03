@@ -1,10 +1,13 @@
 CC= musl-gcc -static -Os
 
-nucleus: main.c miniz.o ../../deps/miniz.c duktape.o duktape-releases/src/duktape.h
-	${CC} -Wall -Wextra -pedantic -std=c11 $< duktape.o miniz.o -o $@
+nucleus: main.o miniz.o duktape.o
+	${CC} $^ -o $@
+
+main.o: main.c
+	${CC} -Wall -Wextra -pedantic -c $< -o $@
 
 duktape.o: duktape-releases/src/duktape.c duktape-releases/src/duktape.h
-	${CC} -Wall -Wextra -pedantic -std=c99 -c $< -o $@
+	${CC} -Wall -Wextra -pedantic -c $< -o $@
 
 miniz.o: ../../deps/miniz.c
 	${CC} -std=c99 -c $< -o $@
