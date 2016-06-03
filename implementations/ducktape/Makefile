@@ -1,7 +1,7 @@
 # CC= musl-gcc -static -Os
 
 test: nucleus
-	./nucleus app -- 1 2 3
+	./nucleus ../../app -- 1 2 3
 
 nucleus: main.o miniz.o duktape.o
 	${CC} $^ -lm  -o $@
