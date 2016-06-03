@@ -337,17 +337,33 @@ static duk_ret_t nucleus_dofile(duk_context *ctx) {
   return 1;
 }
 
-static void duk_put_nucleus(duk_context *ctx, int argc, char *argv[]) {
+static void duk_put_nucleus(duk_context *ctx, int argc, char *argv[], int argstart) {
   // nucleus
   duk_push_object(ctx);
 
+  // nucleus.base
+  duk_push_string(ctx, base);
+  duk_put_prop_string(ctx, -2, "base");
+
+  // nucleus.cmd
+  duk_push_string(ctx, argv[0]);
+  duk_put_prop_string(ctx, -2, "cmd");
+
   // nucleus.args
+  duk_push_array(ctx);
+  for (int i = argstart; i < argc; i++) {
+    duk_push_string(ctx, argv[i]);
+    duk_put_prop_index(ctx, -2, i - argstart);
+  }
+  duk_put_prop_string(ctx, -2, "args");
+
+  // nucleus.rawArgs
   duk_push_array(ctx);
   for (int i = 0; i < argc; i++) {
     duk_push_string(ctx, argv[i]);
     duk_put_prop_index(ctx, -2, i);
   }
-  duk_put_prop_string(ctx, -2, "args");
+  duk_put_prop_string(ctx, -2, "rawArgs");
 
   // nucleus.engine
   duk_push_string(ctx, "duktape");
@@ -372,9 +388,6 @@ static void duk_put_nucleus(duk_context *ctx, int argc, char *argv[]) {
   #endif
   duk_put_prop_string(ctx, -2, "versions");
 
-  // nucleus.base
-  duk_push_string(ctx, base);
-  duk_put_prop_string(ctx, -2, "base");
 
   // nucleus.exit
   duk_push_c_function(ctx, nucleus_exit, 1);
@@ -400,6 +413,7 @@ static void duk_put_nucleus(duk_context *ctx, int argc, char *argv[]) {
 
 int main(int argc, char *argv[]) {
   bool isZip = false;
+  int argstart = 1;
   // If we detect a zip file appended to self, use it.
   if (mz_zip_reader_init_file(&zip, argv[0], 0)) {
     base = argv[0];
@@ -428,9 +442,7 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, "Missing path to app and no embedded zip detected\n");
       exit(1);
     }
-    argc -= i - 1;
-    argv[i - 1] = argv[0];
-    argv = argv + (i - 1);
+    argstart = i;
 
     if (mz_zip_reader_init_file(&zip, base, 0)) {
       isZip = true;
@@ -450,7 +462,7 @@ int main(int argc, char *argv[]) {
 
   // Setup context with global.nucleus
   duk_context *ctx = duk_create_heap_default();
-  duk_put_nucleus(ctx, argc, argv);
+  duk_put_nucleus(ctx, argc, argv, argstart);
 
   // Run main.js function
   printf("\n\nRunning %s:main.js", base);
