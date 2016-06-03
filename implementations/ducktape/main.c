@@ -157,7 +157,7 @@ int main(int argc, char *argv[]) {
       exit(1);
     }
     else if (base) {
-      printf("base=%p\n", base);
+      printf("base=%p\n", (void*)base);
       printf("Unexpected argument: %s\n", argv[i]);
       exit(1);
     }

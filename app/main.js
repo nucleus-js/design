@@ -7,3 +7,8 @@ p(nucleus);
 
 print("\nTesting scandir");
 p(nucleus.scandir('.', p));
+
+print("\nTest various buffer types");
+p(Duktape.Buffer("test"));
+p(new Duktape.Buffer("test"));
+p(new ArrayBuffer("test"));
