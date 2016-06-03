@@ -4,3 +4,6 @@
 [submodule "implementations/jerryscript/jerryscript"]
 	path = implementations/jerryscript/jerryscript
 	url = https://github.com/Samsung/jerryscript.git
+[submodule "deps/libuv"]
+	path = deps/libuv
+	url = https://github.com/libuv/libuv.git
