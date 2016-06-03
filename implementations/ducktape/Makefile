@@ -1,7 +1,7 @@
-CC= musl-gcc -static -Os
+# CC= musl-gcc -static -Os
 
 nucleus: main.o miniz.o duktape.o
-	${CC} $^ -o $@
+	${CC} $^ -lm  -o $@
 
 main.o: main.c
 	${CC} -Wall -Wextra -pedantic -c $< -o $@

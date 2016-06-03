@@ -2,7 +2,6 @@
 
 var width = 80;
 
-
 var quote, quote2, obracket, cbracket, obrace, cbrace, comma, colon;
 
 var theme = nucleus.dofile('deps/theme-256.js');

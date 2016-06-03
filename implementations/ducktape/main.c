@@ -1,7 +1,9 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdbool.h>
+#include <unistd.h>
 #include <dirent.h>
 
 #include "duktape-releases/src/duktape.h"
@@ -11,6 +13,28 @@
 static duk_ret_t nucleus_exit(duk_context *ctx) {
   exit(duk_require_int(ctx, 0));
   return 0;
+}
+
+static char* base;
+
+// Removes count paths from stack and replaces with combined path
+static void pathjoin(duk_context *ctx, const int count) {
+  int i = count;
+  int start = duk_get_top_index(ctx) - count + 1;
+  int num = 0;
+  while (i--) {
+    if (duk_get_string(ctx, start + i)[0] == '/') break;
+  }
+  for (num = count -i; i < count; i++) {
+    duk_dup(ctx, start + i);
+    if (i < count - 1) duk_push_string(ctx, "/");
+  }
+  duk_concat(ctx, num * 2 - 1);
+  char* final = canonicalize_file_name(duk_get_string(ctx, -1));
+  if (final) {
+    duk_pop_n(ctx, count + 1);
+    duk_push_string(ctx, final);
+  }
 }
 
 static void compile(duk_context *ctx, const char* code, const char* name) {
@@ -45,8 +69,16 @@ static void readfile(duk_context *ctx, const char* path) {
   duk_concat(ctx, count);
 }
 
+static void resolve(duk_context *ctx, const char* path) {
+  duk_push_string(ctx, base);
+  duk_push_string(ctx, path);
+  pathjoin(ctx, 2);
+}
+
+
 static duk_ret_t nucleus_readfile(duk_context *ctx) {
-  readfile(ctx, duk_require_string(ctx, 0));
+  resolve(ctx, duk_require_string(ctx, 0));
+  readfile(ctx, duk_get_string(ctx, -1));
   return 1;
 }
 
@@ -55,7 +87,8 @@ static int skipdots(const struct dirent *ent) {
 }
 
 static duk_ret_t nucleus_scandir(duk_context *ctx) {
-  const char* path = duk_require_string(ctx, 0);
+  resolve(ctx, duk_require_string(ctx, 0));
+  const char* path = duk_get_string(ctx, -1);
   duk_require_function(ctx, 1);
   struct dirent **namelist;
   int n = scandir(path, &namelist, skipdots, alphasort);
@@ -85,7 +118,8 @@ static duk_ret_t nucleus_scandir(duk_context *ctx) {
 }
 
 static duk_ret_t nucleus_dofile(duk_context *ctx) {
-  const char* filename = duk_require_string(ctx, 0);
+  resolve(ctx, duk_require_string(ctx, 0));
+  const char* filename = duk_get_string(ctx, -1);
   readfile(ctx, filename);
   if (!duk_is_string(ctx, -1)) return 1;
   compile(ctx, duk_get_string(ctx, -1), filename);
@@ -94,6 +128,8 @@ static duk_ret_t nucleus_dofile(duk_context *ctx) {
 }
 
 static duk_ret_t nucleus_pathjoin(duk_context *ctx) {
+  pathjoin(ctx, duk_get_top_index(ctx));
+  return 1;
 }
 
 int main(int argc, char *argv[]) {
@@ -140,6 +176,14 @@ int main(int argc, char *argv[]) {
   #endif
   duk_put_prop_string(ctx, -2, "versions");
 
+  base = get_current_dir_name();
+  duk_push_string(ctx, base);
+  free(base);
+  duk_push_string(ctx, "app");
+  pathjoin(ctx, 2);
+  base = (char*)duk_get_string(ctx, -1);
+  duk_put_prop_string(ctx, -2, "base");
+
   duk_push_c_function(ctx, nucleus_exit, 1);
   duk_put_prop_string(ctx, -2, "exit");
   duk_push_c_function(ctx, nucleus_compile, 2);
@@ -155,8 +199,10 @@ int main(int argc, char *argv[]) {
 
   duk_put_global_string(ctx, "nucleus");
 
-  duk_eval_string(ctx, "nucleus.dofile('test.js')");
+  // duk_eval_string(ctx, "print('hello')");
+  duk_eval_string(ctx, "try{nucleus.dofile('main.js')}catch(err){print(err);nucleus.exit(1)}");
 
   duk_destroy_heap(ctx);
+
   return 0;
 }
