@@ -125,7 +125,10 @@
 // If all macros here are defined the only functionality remaining will be CRC-32, adler-32, tinfl, and tdefl.
 
 // Define MINIZ_NO_STDIO to disable all usage and any functions which rely on stdio for file I/O.
-#define MINIZ_NO_STDIO
+// #define MINIZ_NO_STDIO
+#ifndef MINIZ_NO_STDIO
+#include <stdio.h>
+#endif
 
 // If MINIZ_NO_TIME is specified then the ZIP archive functions will not be able to get the current time, or
 // get/set file times.
@@ -429,9 +432,8 @@ typedef int mz_bool;
 #define MZ_FALSE (0)
 #define MZ_TRUE (1)
 
-// was: `while (0, 0)` Works around MSVC's spammy "warning C4127: conditional expression is constant" message.
-// now: edited to remove noizy gcc warning
-#define MZ_MACRO_END while (0)
+// Works around MSVC's spammy "warning C4127: conditional expression is constant" message.
+#define MZ_MACRO_END while (0, 0)
 
 // ------------------- ZIP archive reading/writing
 
@@ -2899,12 +2901,12 @@ static time_t mz_zip_dos_to_time_t(int dos_time, int dos_date)
   return mktime(&tm);
 }
 
-// static void mz_zip_time_to_dos_time(time_t time, mz_uint16 *pDOS_time, mz_uint16 *pDOS_date)
-// {
-//   struct tm *tm = localtime(&time);
-//   *pDOS_time = (mz_uint16)(((tm->tm_hour) << 11) + ((tm->tm_min) << 5) + ((tm->tm_sec) >> 1));
-//   *pDOS_date = (mz_uint16)(((tm->tm_year + 1900 - 1980) << 9) + ((tm->tm_mon + 1) << 5) + tm->tm_mday);
-// }
+static void mz_zip_time_to_dos_time(time_t time, mz_uint16 *pDOS_time, mz_uint16 *pDOS_date)
+{
+  struct tm *tm = localtime(&time);
+  *pDOS_time = (mz_uint16)(((tm->tm_hour) << 11) + ((tm->tm_min) << 5) + ((tm->tm_sec) >> 1));
+  *pDOS_date = (mz_uint16)(((tm->tm_year + 1900 - 1980) << 9) + ((tm->tm_mon + 1) << 5) + tm->tm_mday);
+}
 #endif
 
 #ifndef MINIZ_NO_STDIO
@@ -3443,7 +3445,7 @@ mz_bool mz_zip_reader_extract_to_mem_no_alloc(mz_zip_archive *pZip, mz_uint file
   {
     // Temporarily allocate a read buffer.
     read_buf_size = MZ_MIN(file_stat.m_comp_size, MZ_ZIP_MAX_IO_BUF_SIZE);
-    if (((sizeof(size_t) == sizeof(mz_uint32))) && (read_buf_size > 0x7FFFFFFF))
+    if (((0, sizeof(size_t) == sizeof(mz_uint32))) && (read_buf_size > 0x7FFFFFFF))
       return MZ_FALSE;
     if (NULL == (pRead_buf = pZip->m_pAlloc(pZip->m_pAlloc_opaque, 1, (size_t)read_buf_size)))
       return MZ_FALSE;
@@ -3512,7 +3514,7 @@ void *mz_zip_reader_extract_to_heap(mz_zip_archive *pZip, mz_uint file_index, si
   uncomp_size = MZ_READ_LE32(p + MZ_ZIP_CDH_DECOMPRESSED_SIZE_OFS);
 
   alloc_size = (flags & MZ_ZIP_FLAG_COMPRESSED_DATA) ? comp_size : uncomp_size;
-  if (((sizeof(size_t) == sizeof(mz_uint32))) && (alloc_size > 0x7FFFFFFF))
+  if (((0, sizeof(size_t) == sizeof(mz_uint32))) && (alloc_size > 0x7FFFFFFF))
     return NULL;
   if (NULL == (pBuf = pZip->m_pAlloc(pZip->m_pAlloc_opaque, 1, (size_t)alloc_size)))
     return NULL;
@@ -3592,7 +3594,7 @@ mz_bool mz_zip_reader_extract_to_callback(mz_zip_archive *pZip, mz_uint file_ind
     // The file is stored or the caller has requested the compressed data.
     if (pZip->m_pState->m_pMem)
     {
-      if (((sizeof(size_t) == sizeof(mz_uint32))) && (file_stat.m_comp_size > 0xFFFFFFFF))
+      if (((0, sizeof(size_t) == sizeof(mz_uint32))) && (file_stat.m_comp_size > 0xFFFFFFFF))
         return MZ_FALSE;
       if (pCallback(pOpaque, out_buf_ofs, pRead_buf, (size_t)file_stat.m_comp_size) != file_stat.m_comp_size)
         status = TINFL_STATUS_FAILED;
@@ -3807,7 +3809,7 @@ static size_t mz_zip_heap_write_func(void *pOpaque, mz_uint64 file_ofs, const vo
   mz_zip_archive *pZip = (mz_zip_archive *)pOpaque;
   mz_zip_internal_state *pState = pZip->m_pState;
   mz_uint64 new_size = MZ_MAX(file_ofs + n, pState->m_mem_size);
-  if ((!n) || ((sizeof(size_t) == sizeof(mz_uint32)) && (new_size > 0x7FFFFFFF)))
+  if ((!n) || ((0, sizeof(size_t) == sizeof(mz_uint32)) && (new_size > 0x7FFFFFFF)))
     return 0;
   if (new_size > pState->m_mem_capacity)
   {
@@ -3895,7 +3897,7 @@ mz_bool mz_zip_writer_init_from_reader(mz_zip_archive *pZip, const char *pFilena
   if (pState->m_pFile)
   {
 #ifdef MINIZ_NO_STDIO
-    return MZ_FALSE;
+    pFilename; return MZ_FALSE;
 #else
     // Archive is being read from stdio - try to reopen as writable.
     if (pZip->m_pIO_opaque != pZip)

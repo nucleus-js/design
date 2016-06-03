@@ -1,0 +1,6 @@
+nucleus
+*.o
+app
+app.zip
+app-tiny
+prefix
