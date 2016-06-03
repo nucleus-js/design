@@ -3,6 +3,9 @@
 test: nucleus
 	./nucleus ../../app -- 1 2 3
 
+static: main.c
+	musl-gcc -static -Os ../../deps/miniz.c main.c duktape-releases/src/duktape.c -o nucleus
+
 nucleus: main.o miniz.o duktape.o
 	${CC} $^ -lm  -o $@
 

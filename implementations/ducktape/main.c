@@ -30,7 +30,7 @@ static void pathjoin(duk_context *ctx, const int count) {
     if (i < count - 1) duk_push_string(ctx, "/");
   }
   duk_concat(ctx, num * 2 - 1);
-  char* final = canonicalize_file_name(duk_get_string(ctx, -1));
+  char* final = realpath(duk_get_string(ctx, -1), 0);
   if (final) {
     duk_pop_n(ctx, count + 1);
     duk_push_string(ctx, final);
