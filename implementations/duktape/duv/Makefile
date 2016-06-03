@@ -26,7 +26,7 @@ duv.a: ${LIBS}
 	${AR} cr $@ ${LIBS}
 
 %.o: %.c %.h
-	${CC} -c $< -o $@
+	${CC} -std=c99 -Wall -Wextra -pedantic -Werror -c $< -o $@
 
 clean:
 	rm -f *.o *.a

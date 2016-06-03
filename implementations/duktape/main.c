@@ -13,6 +13,7 @@
 #include "duktape-releases/src/duktape.h"
 #define MINIZ_HEADER_FILE_ONLY
 #include "../../deps/miniz.c"
+#include "duv/duv.h"
 
 static duk_ret_t nucleus_exit(duk_context *ctx) {
   exit(duk_require_int(ctx, 0));
@@ -407,6 +408,10 @@ static void duk_put_nucleus(duk_context *ctx, int argc, char *argv[], int argsta
   // nucleus.pathjoin
   duk_push_c_function(ctx, duv_path_join, DUK_VARARGS);
   duk_put_prop_string(ctx, -2, "pathjoin");
+
+  // nucleus.uv
+  duv_push_module(ctx);
+  duk_put_prop_string(ctx, -2, "uv");
 
   duk_put_global_string(ctx, "nucleus");
 }

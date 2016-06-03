@@ -1,3 +1,8 @@
+LIBUV= ../../deps/libuv
+
+nucleus: main.o miniz.o duktape.o duv/duv.a ${LIBUV}/.libs/libuv.a
+	${CC} $^ -lm -lpthread -o $@
+
 test: test-dir test-zip test-app test-app-tiny
 
 test-dir: nucleus
@@ -27,14 +32,24 @@ app.zip: ../../app* ../../app/deps/*
 	rm -f app.zip
 	cd ../../app; zip -9 -r ../implementations/duktape/app.zip .; cd -
 
-static: main.c
-	musl-gcc -static -Os ../../deps/miniz.c main.c duktape-releases/src/duktape.c -o nucleus
-
-nucleus: main.o miniz.o duktape.o
-	${CC} -Werror $^ -lm  -o $@
+static: main.c duv.c duv.h ${LIBUV}/.libs/libuv.a
+	musl-gcc -std=gnu99 -static -Os ../../deps/miniz.c main.c duv.c duktape-releases/src/duktape.c ${LIBUV}/.libs/libuv.a -o nucleus
 
 main.o: main.c
-	${CC} -std=c99 -Wall -Wextra -pedantic -c $< -o $@
+	${CC} -std=c99 -Wall -Wextra -pedantic -Werror -c $< -o $@
+
+
+${LIBUV}/.libs/libuv.a: ${LIBUV}/Makefile
+	${MAKE} -C ${LIBUV}
+
+${LIBUV}/Makefile: ${LIBUV}/configure
+	cd ${LIBUV}; ./configure; cd -
+
+${LIBUV}/configure: ${LIBUV}/autogen.sh
+	cd ${LIBUV}; ./autogen.sh; cd -
+
+duv/duv.a: duv/*.c duv/*.h
+	${MAKE} -C duv
 
 duktape.o: duktape-releases/src/duktape.c duktape-releases/src/duktape.h
 	${CC} -std=c99 -Wall -Wextra -pedantic -c $< -o $@
@@ -44,3 +59,7 @@ miniz.o: ../../deps/miniz.c
 
 clean:
 	rm -f nucleus *.o app.zip app prefix app-tiny
+	${MAKE} -C duv clean
+
+distclean: clean
+	${MAKE} -C ${LIBUV} distclean
