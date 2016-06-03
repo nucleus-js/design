@@ -29,28 +29,146 @@ static struct {
   duk_c_function scan;
 } resource;
 
-// Removes count paths from stack and replaces with combined path
-static void pathjoin(duk_context *ctx, const int count) {
-  int i = count;
-  int start = duk_get_top_index(ctx) - count + 1;
-  int num = 0;
-  while (i--) {
-    if (duk_get_string(ctx, start + i)[0] == '/') break;
+typedef struct duv_list {
+  const char* part;
+  int offset;
+  int length;
+  struct duv_list* next;
+} duv_list_t;
+
+static duv_list_t* duv_list_node(const char* part, int start, int end, duv_list_t* next) {
+  duv_list_t *node = malloc(sizeof(*node));
+  node->part = part;
+  node->offset = start;
+  node->length = end - start;
+  node->next = next;
+  return node;
+}
+
+static duk_ret_t duv_path_join(duk_context *ctx) {
+  duv_list_t *list = NULL;
+  int absolute = 0;
+
+  // Walk through all the args and split into a linked list
+  // of segments
+  {
+    // Scan backwards looking for the the last absolute positioned path.
+    int top = duk_get_top(ctx);
+    int i = top - 1;
+    while (i > 0) {
+      const char* part = duk_require_string(ctx, i);
+      if (part[0] == '/') break;
+      i--;
+    }
+    for (; i < top; ++i) {
+      const char* part = duk_require_string(ctx, i);
+      int j;
+      int start = 0;
+      int length = strlen(part);
+      if (part[0] == '/') {
+        absolute = 1;
+      }
+      while (start < length && part[start] == 0x2f) { ++start; }
+      for (j = start; j < length; ++j) {
+        if (part[j] == 0x2f) {
+          if (start < j) {
+            list = duv_list_node(part, start, j, list);
+            start = j;
+            while (start < length && part[start] == 0x2f) { ++start; }
+          }
+        }
+      }
+      if (start < j) {
+        list = duv_list_node(part, start, j, list);
+      }
+    }
   }
-  for (num = count -i; i < count; i++) {
-    duk_dup(ctx, start + i);
-    if (i < count - 1) duk_push_string(ctx, "/");
+
+  // Run through the list in reverse evaluating "." and ".." segments.
+  {
+    int skip = 0;
+    duv_list_t *prev = NULL;
+    while (list) {
+      duv_list_t *node = list;
+
+      // Ignore segments with "."
+      if (node->length == 1 &&
+          node->part[node->offset] == 0x2e) {
+        goto skip;
+      }
+
+      // Ignore segments with ".." and grow the skip count
+      if (node->length == 2 &&
+          node->part[node->offset] == 0x2e &&
+          node->part[node->offset + 1] == 0x2e) {
+        ++skip;
+        goto skip;
+      }
+
+      // Consume the skip count
+      if (skip > 0) {
+        --skip;
+        goto skip;
+      }
+
+      list = node->next;
+      node->next = prev;
+      prev = node;
+      continue;
+
+      skip:
+        list = node->next;
+        free(node);
+    }
+    list = prev;
   }
-  duk_concat(ctx, num * 2 - 1);
-  // char* final = realpath(duk_get_string(ctx, -1), 0);
-  // if (final) {
-  //   duk_pop_n(ctx, count + 1);
-  //   duk_push_string(ctx, final);
-  // }
+
+  // Merge the list into a single `/` delimited string.
+  // Free the remaining list nodes.
+  {
+    int count = 0;
+    if (absolute) {
+      duk_push_string(ctx, "/");
+      ++count;
+    }
+    while (list) {
+      duv_list_t *node = list;
+      duk_push_lstring(ctx, node->part + node->offset, node->length);
+      ++count;
+      if (node->next) {
+        duk_push_string(ctx, "/");
+        ++count;
+      }
+      list = node->next;
+      free(node);
+    }
+    duk_concat(ctx, count);
+  }
+  return 1;
+}
+
+// Changes the first arg in place
+static void canonicalize(duk_context *ctx) {
+  duk_require_string(ctx, 0);
+  duk_push_c_function(ctx, duv_path_join, DUK_VARARGS);
+  duk_dup(ctx, 0);
+  duk_call(ctx, 1);
+  duk_replace(ctx, 0);
+}
+
+// Changes the first arg in place
+static void resolve(duk_context *ctx) {
+  duk_require_string(ctx, 0);
+  duk_push_c_function(ctx, duv_path_join, DUK_VARARGS);
+  duk_push_string(ctx, base);
+  duk_dup(ctx, 0);
+  duk_call(ctx, 2);
+  duk_replace(ctx, 0);
 }
 
 static duk_ret_t read_from_zip(duk_context *ctx) {
-  const char* filename = duk_require_string(ctx, 0);
+  canonicalize(ctx);
+  const char* filename = duk_get_string(ctx, 0);
   size_t size = 0;
   char* data = mz_zip_reader_extract_file_to_heap(&zip, filename, &size, 0);
   if (data) {
@@ -63,20 +181,54 @@ static duk_ret_t read_from_zip(duk_context *ctx) {
   return 1;
 }
 static duk_ret_t scan_from_zip(duk_context *ctx) {
-  duk_error(ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "TODO: Implement scan_from_zip");
-  return 0;
-}
-
-static void resolve_in_place(duk_context *ctx, int index) {
-  duk_require_string(ctx, index);
-  duk_push_string(ctx, base);
-  duk_dup(ctx, index < 0 ? index - 1 : index);
-  pathjoin(ctx, 2);
-  duk_replace(ctx, index < 0 ? index - 1 : index);
+  canonicalize(ctx);
+  duk_require_function(ctx, 1);
+  const char* path = duk_get_string(ctx, 0);
+  int index = -1;
+  int pathlen = strlen(path);
+  if (pathlen) {
+    index = mz_zip_reader_locate_file(&zip, path, 0, 0);
+    if (index < 0) {
+      duk_push_false(ctx);
+      return 1;
+    }
+    printf("Index %d\n", index);
+    if (!mz_zip_reader_is_file_a_directory(&zip, index)) {
+      duk_error(ctx, DUK_ERR_ERROR, "%s is not a directory", path);
+      return 0;
+    }
+  }
+  int num = mz_zip_reader_get_num_files(&zip);
+  char entry[PATH_MAX];
+  while (++index < num) {
+    mz_uint size = mz_zip_reader_get_filename(&zip, index, entry, PATH_MAX);
+    if (strncmp(path, entry, pathlen)) break;
+    char *name = &(entry[pathlen]);
+    size -= pathlen;
+    if (name[0] == '/') {
+      name++;
+      size--;
+    }
+    char* match = strchr(name, '/');
+    if (match && match[1]) break;
+    duk_dup(ctx, 1);
+    if (name[size - 2] == '/') {
+      duk_push_lstring(ctx, name + pathlen, size - pathlen - 2);
+      duk_push_string(ctx, "directory");
+    }
+    else {
+      duk_push_lstring(ctx, name + pathlen, size - pathlen - 1);
+      duk_push_string(ctx, "file");
+    }
+    duk_call(ctx, 2);
+    duk_pop(ctx);
+  }
+  duk_push_true(ctx);
+  return 1;
 }
 
 static duk_ret_t read_from_disk(duk_context *ctx) {
-  resolve_in_place(ctx, 0);
+  resolve(ctx);
   const char* path = duk_require_string(ctx, 0);
   int fd = open(path, O_RDONLY);
   if (fd < 0) {
@@ -105,36 +257,40 @@ static duk_ret_t read_from_disk(duk_context *ctx) {
   return 1;
 }
 static duk_ret_t scan_from_disk(duk_context *ctx) {
-  resolve_in_place(ctx, 0);
-  duk_error(ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "TODO: Implement scan_from_disk");
-  return 0;
-  // const char* path = duk_get_string(ctx, 0);
-  // duk_require_function(ctx, 1);
-  // struct dirent **namelist;
-  // int n = scandir(path, &namelist, skipdots, alphasort);
-  // if (n < 0) {
-  //   duk_push_false(ctx);
-  //   return 1;
-  // }
-  // while (n--) {
-  //   duk_dup(ctx, 1);
-  //   duk_push_string(ctx, namelist[n]->d_name);
-  //   switch (namelist[n]->d_type) {
-  //     case DT_BLK: duk_push_string(ctx, "block"); break;
-  //     case DT_CHR: duk_push_string(ctx, "character"); break;
-  //     case DT_DIR: duk_push_string(ctx, "directory"); break;
-  //     case DT_FIFO: duk_push_string(ctx, "fifo"); break;
-  //     case DT_LNK: duk_push_string(ctx, "link"); break;
-  //     case DT_REG: duk_push_string(ctx, "file"); break;
-  //     case DT_SOCK: duk_push_string(ctx, "socket"); break;
-  //     default: duk_push_string(ctx, "unknown"); break;
-  //   }
-  //   free(namelist[n]);
-  //   duk_call(ctx, 2);
-  // }
-  // free(namelist);
-  // duk_push_true(ctx);
-  // return 1;
+  resolve(ctx);
+  duk_require_function(ctx, 1);
+  const char* path = duk_get_string(ctx, 0);
+  struct dirent *dp;
+  DIR *dir = opendir(path);
+  if (!dir) {
+    if (errno == ENOENT) {
+      duk_push_null(ctx);
+      return 1;
+    }
+    duk_error(ctx, DUK_ERR_ERROR, "Failed to opendir %s: %s", path, strerror(errno));
+    return 0;
+  }
+  while ((dp = readdir(dir)) != NULL) {
+    if (strcmp(dp->d_name, ".") && strcmp(dp->d_name, "..")) {
+      duk_dup(ctx, 1);
+      duk_push_string(ctx, dp->d_name);
+      switch (dp->d_type) {
+        case DT_BLK: duk_push_string(ctx, "block"); break;
+        case DT_CHR: duk_push_string(ctx, "character"); break;
+        case DT_DIR: duk_push_string(ctx, "directory"); break;
+        case DT_FIFO: duk_push_string(ctx, "fifo"); break;
+        case DT_LNK: duk_push_string(ctx, "link"); break;
+        case DT_REG: duk_push_string(ctx, "file"); break;
+        case DT_SOCK: duk_push_string(ctx, "socket"); break;
+        default: duk_push_string(ctx, "unknown"); break;
+      }
+      duk_call(ctx, 2);
+      duk_pop(ctx);
+    }
+  }
+  closedir(dir);
+  duk_push_true(ctx);
+  return 1;
 }
 
 static void compile(duk_context *ctx, const char* code, const char* name) {
@@ -168,11 +324,6 @@ static duk_ret_t nucleus_dofile(duk_context *ctx) {
   }
   compile(ctx, duk_get_string(ctx, -1), filename);
   duk_call(ctx, 0);
-  return 1;
-}
-
-static duk_ret_t nucleus_pathjoin(duk_context *ctx) {
-  pathjoin(ctx, duk_get_top_index(ctx));
   return 1;
 }
 
@@ -231,7 +382,7 @@ static void duk_put_nucleus(duk_context *ctx, int argc, char *argv[]) {
   duk_push_c_function(ctx, nucleus_dofile, 1);
   duk_put_prop_string(ctx, -2, "dofile");
   // nucleus.pathjoin
-  duk_push_c_function(ctx, nucleus_pathjoin, DUK_VARARGS);
+  duk_push_c_function(ctx, duv_path_join, DUK_VARARGS);
   duk_put_prop_string(ctx, -2, "pathjoin");
 
   duk_put_global_string(ctx, "nucleus");
