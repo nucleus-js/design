@@ -428,8 +428,9 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, "Missing path to app and no embedded zip detected\n");
       exit(1);
     }
-    argc -= i;
-    argv = &(argv[i]);
+    argc -= i - 1;
+    argv[i - 1] = argv[0];
+    argv = argv + (i - 1);
 
     if (mz_zip_reader_init_file(&zip, base, 0)) {
       isZip = true;
