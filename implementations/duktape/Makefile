@@ -1,5 +1,9 @@
 LIBUV= ../../deps/libuv
 
+# Uncomment the following to make a static binary
+# Make sure to `make distclean` before building when changing CC.
+# CC= musl-gcc -Os -static
+
 nucleus: main.o miniz.o duktape.o duv/duv.a ${LIBUV}/.libs/libuv.a
 	${CC} $^ -lm -lpthread -o $@
 
@@ -31,9 +35,6 @@ prefix: nucleus
 app.zip: ../../app* ../../app/deps/*
 	rm -f app.zip
 	cd ../../app; zip -9 -r ../implementations/duktape/app.zip .; cd -
-
-static: main.c duv.c duv.h ${LIBUV}/.libs/libuv.a
-	musl-gcc -std=gnu99 -static -Os ../../deps/miniz.c main.c duv.c duktape-releases/src/duktape.c ${LIBUV}/.libs/libuv.a -o nucleus
 
 main.o: main.c
 	${CC} -std=c99 -Wall -Wextra -pedantic -Werror -c $< -o $@
