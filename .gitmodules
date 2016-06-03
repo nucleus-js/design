@@ -1,5 +1,5 @@
-[submodule "implementations/ducktape/duktape-releases"]
-	path = implementations/ducktape/duktape-releases
+[submodule "implementations/duktape/duktape-releases"]
+	path = implementations/duktape/duktape-releases
 	url = https://github.com/svaarala/duktape-releases.git
 [submodule "implementations/jerryscript/jerryscript"]
 	path = implementations/jerryscript/jerryscript
