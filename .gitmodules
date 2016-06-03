@@ -1,6 +1,6 @@
-[submodule "backends/ducktape/duktape-releases"]
-	path = backends/ducktape/duktape-releases
+[submodule "implementations/ducktape/duktape-releases"]
+	path = implementations/ducktape/duktape-releases
 	url = https://github.com/svaarala/duktape-releases.git
-[submodule "backends/jerryscript/jerryscript"]
-	path = backends/jerryscript/jerryscript
+[submodule "implementations/jerryscript/jerryscript"]
+	path = implementations/jerryscript/jerryscript
 	url = https://github.com/Samsung/jerryscript.git
