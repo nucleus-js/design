@@ -142,17 +142,32 @@ int main(int argc, char *argv[]) {
 
   duk_push_array(ctx);
   int argStart = 0;
-  for (int i = 0; i < argc; i++) {
+  for (int i = 1; i < argc; i++) {
     if (argStart) {
       duk_push_string(ctx, argv[i]);
       duk_put_prop_index(ctx, -2, i - argStart);
+      continue;
     }
-    else {
-      if (strcmp(argv[i], "--") == 0) {
-        argStart = i + 1;
-      }
+    if (strcmp(argv[i], "--") == 0) {
+      argStart = i + 1;
+      continue;
     }
+    else if (argv[i][0] == '-') {
+      printf("Unknown flag: %s\n", argv[i]);
+      exit(1);
+    }
+    else if (base) {
+      printf("base=%p\n", base);
+      printf("Unexpected argument: %s\n", argv[i]);
+      exit(1);
+    }
+    base = argv[i];
   }
+  if (!base) {
+    printf("Missing base path.");
+    exit(1);
+  }
+
   duk_put_prop_string(ctx, -2, "args");
 
   duk_push_string(ctx, "duktape");
@@ -176,10 +191,10 @@ int main(int argc, char *argv[]) {
   #endif
   duk_put_prop_string(ctx, -2, "versions");
 
-  base = get_current_dir_name();
+  char* cwd = get_current_dir_name();
+  duk_push_string(ctx, cwd);
+  free(cwd);
   duk_push_string(ctx, base);
-  free(base);
-  duk_push_string(ctx, "app");
   pathjoin(ctx, 2);
   base = (char*)duk_get_string(ctx, -1);
   duk_put_prop_string(ctx, -2, "base");
