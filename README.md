@@ -49,7 +49,6 @@ This file will be run in the JS runtime with a global `nucleus` injected.
 ```js
 // main.js
 // Bootstrap the node environment with the dofile builtin.
-// This is a combination of `nucleus.eval` and `nucleus.readfile`.
 nucleus.dofile('node_modules/node-core/bootstrap.js')(function (require, module) {
   // node code goes here
 });
@@ -73,6 +72,16 @@ called and the main script returns, then the process exits with 0.
 ### nucleus.config
 
 A map of versions of nucleus and it's compiled in bindings.
+
+### nucleus.compile(string, path) -> function
+
+Compile a string into a JavaScript function.
+
+### nucleus.dofile(path) -> value
+
+This is basically a combination of `nucleus.readfile` and `nucleus.compile` which
+then executes the resulting function returning the result.  It's generally used
+for bootstrapping an environment or module system.
 
 ### nucleus.readfile(path) -> data
 
@@ -98,7 +107,7 @@ usually.
 
 ### nucleus.pathjoin(...parts) -> path
 
-Basic path-join to be used for paths to `scandir` and `readfile`.
+Basic path-join to be used for paths to `dofile`, `scandir`, and `readfile`.
 
 ### nucleus.base
 
