@@ -1,0 +1,3 @@
+[submodule "backends/ducktape/duktape-releases"]
+	path = backends/ducktape/duktape-releases
+	url = https://github.com/svaarala/duktape-releases.git
