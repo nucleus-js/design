@@ -37,7 +37,7 @@ app.zip: ../../app* ../../app/deps/*
 	cd ../../app; zip -9 -r ../implementations/duktape/app.zip .; cd -
 
 main.o: main.c
-	${CC} -std=c99 -Wall -Wextra -pedantic -Werror -c $< -o $@
+	${CC} -std=gnu99 -Wall -Wextra -pedantic -Werror -c $< -o $@
 
 
 ${LIBUV}/.libs/libuv.a: ${LIBUV}/Makefile
@@ -63,4 +63,4 @@ clean:
 	${MAKE} -C duv clean
 
 distclean: clean
-	${MAKE} -C ${LIBUV} distclean
+	cd ${LIBUV}; git clean -xdf; cd -

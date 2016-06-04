@@ -465,8 +465,9 @@ int main(int argc, char *argv[]) {
     resource.scan = scan_from_disk;
   }
 
+  // Tie loop and context together
+  duk_context *ctx = duk_create_heap(NULL, NULL, NULL, uv_default_loop(), NULL);
   // Setup context with global.nucleus
-  duk_context *ctx = duk_create_heap_default();
   duk_put_nucleus(ctx, argc, argv, argstart);
 
   // Run main.js function
