@@ -95,6 +95,9 @@ function dump(value) {
     if (name !== "Object" && name !== "Array" && name !== "global") {
       return colorize("object", "[" + name + " " + info[1] + "]");
     }
+    if (typeof value.inspect === "function" && !value.hasOwnProperty("inspect")) {
+      return colorize("object", value.inspect());
+    }
 
     var index = seen.indexOf(value);
     if (depth > 2 || index >= 0) {

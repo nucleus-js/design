@@ -1,35 +1,62 @@
 #include "duv.h"
 
+#include "utils.h"
+#include "loop.h"
+#include "handle.h"
+#include "timer.h"
+
+static duk_ret_t duv_tostring(duk_context *ctx) {
+  duk_push_this(ctx);
+  duk_get_prop_string(ctx, -1, "\xffuv-type");
+  duk_get_prop_string(ctx, -2, "\xffuv-data");
+  const char* type = duv_type_to_string(duk_get_int(ctx, -2));
+  void* data = duk_get_buffer(ctx, -1, 0);
+  duk_pop_3(ctx);
+  duk_push_sprintf(ctx, "[%s %"PRIXPTR"]", type, data);
+  return 1;
+}
+
+
+static const duk_function_list_entry duv_handle_methods[] = {
+  {"inspect", duv_tostring, 0},
+  {"toString", duv_tostring, 0},
+  {"close", duv_close, 1},
+  {0,0,0}
+};
+
+static const duk_function_list_entry duv_timer_methods[] = {
+  {"inspect", duv_tostring, 0},
+  {"toString", duv_tostring, 0},
+  {"start", duv_timer_start, 3},
+  {"stop", duv_timer_stop, 0},
+  {"again", duv_timer_again, 0},
+  {"setRepeat", duv_timer_set_repeat, 1},
+  {"getRepeat", duv_timer_get_repeat, 0},
+  {0,0,0}
+};
+
+// // req.c
+// {"cancel", duv_cancel, 1},
+
+// // stream.c
+// {"shutdown", duv_shutdown, 2},
+// {"listen", duv_listen, 3},
+// {"accept", duv_accept, 2},
+// {"read_start", duv_read_start, 2},
+// {"read_stop", duv_read_stop, 1},
+// {"write", duv_write, 3},
+// {"is_readable", duv_is_readable, 1},
+// {"is_writable", duv_is_writable, 1},
+// {"stream_set_blocking", duv_stream_set_blocking, 2},
+
+
 static const duk_function_list_entry duv_funcs[] = {
-  // // loop.c
-  // {"run", duv_run, 0},
-  // {"walk", duv_walk, 1},
-  //
-  // // req.c
-  // {"cancel", duv_cancel, 1},
-  //
-  // // handle.c
-  // {"close", duv_close, 2},
-  //
-  // // timer.c
-  // {"new_timer", duv_new_timer, 0},
-  // {"timer_start", duv_timer_start, 4},
-  // {"timer_stop", duv_timer_stop, 1},
-  // {"timer_again", duv_timer_again, 1},
-  // {"timer_set_repeat", duv_timer_set_repeat, 2},
-  // {"timer_get_repeat", duv_timer_get_repeat, 1},
-  //
-  // // stream.c
-  // {"shutdown", duv_shutdown, 2},
-  // {"listen", duv_listen, 3},
-  // {"accept", duv_accept, 2},
-  // {"read_start", duv_read_start, 2},
-  // {"read_stop", duv_read_stop, 1},
-  // {"write", duv_write, 3},
-  // {"is_readable", duv_is_readable, 1},
-  // {"is_writable", duv_is_writable, 1},
-  // {"stream_set_blocking", duv_stream_set_blocking, 2},
-  //
+  // loop.c
+  {"run", duv_run, 0},
+  {"walk", duv_walk, 1},
+
+  {"Timer", duv_timer, 0},
+
   // // tcp.c
   // {"new_tcp", duv_new_tcp, 0},
   // {"tcp_open", duv_tcp_open, 2},
@@ -117,7 +144,25 @@ static const duk_function_list_entry duv_funcs[] = {
 };
 
 duk_ret_t duv_push_module(duk_context *ctx) {
+  // duv
   duk_push_object(ctx);
   duk_put_function_list(ctx, -1, duv_funcs);
+
+  // duv.Handle.prototype
+  duk_push_object(ctx);
+  duk_put_function_list(ctx, -1, duv_handle_methods);
+  duk_get_prop_string(ctx, -2, "Timer");
+
+  // duv.Timer.prototype
+  duk_push_object(ctx);
+  duk_put_function_list(ctx, -1, duv_timer_methods);
+  duk_dup(ctx, -3);
+  duk_set_prototype(ctx, -2);
+  duk_put_prop_string(ctx, -2, "prototype");
+  duk_pop(ctx);
+
+  // pop Handle.prototype
+  duk_pop(ctx);
+
   return 1;
 }

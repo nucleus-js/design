@@ -465,9 +465,11 @@ int main(int argc, char *argv[]) {
     resource.scan = scan_from_disk;
   }
 
-  // Tie loop and context together
-  duk_context *ctx = duk_create_heap(NULL, NULL, NULL, uv_default_loop(), NULL);
   // Setup context with global.nucleus
+  uv_loop_t loop;
+  uv_loop_init(&loop);
+  duk_context *ctx = duk_create_heap(0, 0, 0, &loop, 0);
+
   duk_put_nucleus(ctx, argc, argv, argstart);
 
   // Run main.js function
@@ -480,7 +482,7 @@ int main(int argc, char *argv[]) {
   }
   duk_push_string(ctx, "nucleus.dofile('main.js')");
   if (duk_peval(ctx)) {
-    fprintf(stderr, "Uncaught Error: %s\n", duk_safe_to_string(ctx, -1));
+    fprintf(stderr, "Uncaught %s\n", duk_safe_to_string(ctx, -1));
     exit(1);
   }
 

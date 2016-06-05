@@ -3,6 +3,7 @@ LIBUV= ../../deps/libuv
 # Uncomment the following to make a static binary
 # Make sure to `make distclean` before building when changing CC.
 # CC= musl-gcc -Os -static
+CC= cc -g
 
 nucleus: main.o miniz.o duktape.o duv/duv.a ${LIBUV}/.libs/libuv.a
 	${CC} $^ -lm -lpthread -o $@

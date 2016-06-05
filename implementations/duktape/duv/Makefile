@@ -20,7 +20,8 @@ LIBS=\
 	dns.o\
 	misc.o\
 	duv.o\
-	utils.o
+	utils.o\
+	dschema.o
 
 duv.a: ${LIBS}
 	${AR} cr $@ ${LIBS}
