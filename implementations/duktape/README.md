@@ -5,7 +5,7 @@ It's tested regularly on Linux and OSX.
 ## Status
 
 Currently this port is still im progress, but there is enough to already start
-writing userland modules that use the `nucleus` global and parts of libuv. 
+writing userland modules that use the `nucleus` global and parts of libuv.
 
 ## Building
 
@@ -36,3 +36,6 @@ make sure to run `make distclean` before trying a new build.
 
 If you want a small static binary on linux using musl, install musl-tools on
 your ubuntu system and set `CC= musl-gcc -Os -static` and rebuild.
+
+For maximum smallness (especially with the static build), `strip` your nucleus
+binary before appending the app zip to it.
