@@ -1,9 +1,12 @@
 LIBUV= ../../deps/libuv
 
-# Uncomment the following to make a static binary
 # Make sure to `make distclean` before building when changing CC.
-# CC= musl-gcc -Os -static
+# Default build is debug mode.
 CC= cc -g
+# Uncomment the following to make a small binary
+# CC= cc -Os
+# Uncomment the following to make a static musl binary on linux
+# CC= musl-gcc -Os -static
 
 nucleus: main.o miniz.o duktape.o duv/duv.a ${LIBUV}/.libs/libuv.a
 	${CC} $^ -lm -lpthread -o $@
