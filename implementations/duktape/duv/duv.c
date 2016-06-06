@@ -1,10 +1,10 @@
 #include "duv.h"
-
 #include "utils.h"
 #include "loop.h"
 #include "handle.h"
 #include "timer.h"
 #include "stream.h"
+#include "tcp.h"
 
 static const duk_function_list_entry duv_handle_methods[] = {
   {"inspect", duv_tostring, 0},
@@ -39,6 +39,17 @@ static const duk_function_list_entry duv_stream_methods[] = {
   {"setBlocking", duv_stream_set_blocking, 1},
 };
 
+static const duk_function_list_entry duv_tcp_methods[] = {
+  {"open", duv_tcp_open, 1},
+  {"nodelay", duv_tcp_nodelay, 1},
+  {"keepalive", duv_tcp_keepalive, 2},
+  {"simultaneousAccepts", duv_tcp_simultaneous_accepts, 1},
+  {"bind", duv_tcp_bind, 2},
+  {"getpeername", duv_tcp_getpeername, 0},
+  {"getsockname", duv_tcp_getsockname, 0},
+  {"connect", duv_tcp_connect, 3},
+};
+
 // // req.c
 // {"cancel", duv_cancel, 1},
 
@@ -47,19 +58,9 @@ static const duk_function_list_entry duv_funcs[] = {
   {"run", duv_run, 0},
   {"walk", duv_walk, 1},
 
+  // libuv handle constructors
   {"Timer", duv_timer, 0},
 
-  // // tcp.c
-  // {"new_tcp", duv_new_tcp, 0},
-  // {"tcp_open", duv_tcp_open, 2},
-  // {"tcp_nodelay", duv_tcp_nodelay, 2},
-  // {"tcp_keepalive", duv_tcp_keepalive, 3},
-  // {"tcp_simultaneous_accepts", duv_tcp_simultaneous_accepts, 2},
-  // {"tcp_bind", duv_tcp_bind, 3},
-  // {"tcp_getpeername", duv_tcp_getpeername, 1},
-  // {"tcp_getsockname", duv_tcp_getsockname, 1},
-  // {"tcp_connect", duv_tcp_connect, 4},
-  //
   // // pipe.c
   // {"new_pipe", duv_new_pipe, 1},
   // {"pipe_open", duv_pipe_open, 2},
