@@ -21,6 +21,7 @@ LIBS=\
 	misc.o\
 	duv.o\
 	utils.o\
+	callbacks.o\
 	dschema.o
 
 duv.a: ${LIBS}

@@ -9,6 +9,8 @@ const char* duv_mask_to_string(duv_type_mask_t mask);
 
 // Retrieve the stored libuv loop from the duktape context.
 uv_loop_t* duv_loop(duk_context *ctx);
+// Push status as either error or null
+void duv_push_status(duk_context *ctx, int status);
 // Throw a libuv error in duktape.
 void duv_error(duk_context *ctx, int status);
 // Check return value from libuv function for errors.
@@ -26,5 +28,8 @@ void* duv_get_handle(duk_context *ctx, int index);
 duk_bool_t duv_is_handle_of(duk_context *ctx, int index, duv_type_mask_t mask);
 // Get the this handle.
 void* duv_require_this_handle(duk_context *ctx, duv_type_mask_t mask);
+// Assumes nargs are the top of the stack.  Rest comes from handle and key.
+// Return value is not left on the stack.
+void duv_call_callback(uv_handle_t* handle, const char* key, int nargs);
 
 #endif

@@ -31,7 +31,7 @@ static const duk_function_list_entry duv_stream_methods[] = {
   {"shutdown", duv_shutdown, 1},
   {"listen", duv_listen, 2},
   {"accept", duv_accept, 1},
-  {"readRtart", duv_read_start, 1},
+  {"readStart", duv_read_start, 1},
   {"readStop", duv_read_stop, 0},
   {"write", duv_write, 2},
   {"isReadable", duv_is_readable, 0},

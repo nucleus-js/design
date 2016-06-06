@@ -1,20 +1,12 @@
 #include "timer.h"
 #include "utils.h"
+#include "callbacks.h"
 
 duk_ret_t duv_timer(duk_context *ctx) {
   uv_timer_t *timer = duk_push_fixed_buffer(ctx, sizeof(uv_timer_t));
   duv_check(ctx, uv_timer_init(duv_loop(ctx), timer));
   duv_setup_handle(ctx, (uv_handle_t*)timer, DUV_TIMER);
   return 1;
-}
-
-static void duv_on_timeout(uv_timer_t *timer) {
-  duk_context *ctx = timer->data;
-  duv_push_handle(ctx, timer);
-  duk_get_prop_string(ctx, -1, "\xffon-timeout");
-  duk_remove(ctx, -2);
-  duk_call(ctx, 0);
-  duk_pop(ctx);
 }
 
 duk_ret_t duv_timer_start(duk_context *ctx) {

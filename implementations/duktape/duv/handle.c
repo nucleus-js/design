@@ -1,5 +1,6 @@
 #include "handle.h"
 #include "utils.h"
+#include "callbacks.h"
 
 
 duk_ret_t duv_tostring(duk_context *ctx) {
@@ -12,17 +13,6 @@ duk_ret_t duv_tostring(duk_context *ctx) {
   duk_pop_3(ctx);
   duk_push_sprintf(ctx, "[%s %p]", type, data);
   return 1;
-}
-
-void duv_on_close(uv_handle_t *handle) {
-  duk_context *ctx = handle->data;
-  duv_push_handle(ctx, handle);
-  duk_get_prop_string(ctx, -1, "\xffon-close");
-  duk_remove(ctx, -2);
-  if (duk_is_function(ctx, -1)) {
-    duk_call(ctx, 0);
-  }
-  duk_pop(ctx);
 }
 
 duk_ret_t duv_close(duk_context *ctx) {

@@ -27,6 +27,15 @@ uv_loop_t* duv_loop(duk_context *ctx) {
   return funcs.udata;
 }
 
+void duv_push_status(duk_context *ctx, int status) {
+  if (status < 0) {
+    duk_push_error_object(ctx, DUK_ERR_ERROR, "%s: %s", uv_err_name(status), uv_strerror(status));
+  }
+  else {
+    duk_push_null(ctx);
+  }
+}
+
 void duv_error(duk_context *ctx, int status) {
   duk_error(ctx, DUK_ERR_ERROR, "%s: %s", uv_err_name(status), uv_strerror(status));
 }
@@ -97,4 +106,23 @@ void* duv_require_this_handle(duk_context *ctx, duv_type_mask_t mask) {
   void *handle = duv_get_handle(ctx, -1);
   duk_insert(ctx, 0);
   return handle;
+}
+
+void duv_call_callback(uv_handle_t* handle, const char* key, int nargs) {
+  duk_context *ctx = handle->data;
+  duv_push_handle(ctx, handle);
+  // stack: args... this
+  duk_get_prop_string(ctx, -1, key);
+  // stack: args... this fn
+  if (!duk_is_function(ctx, -1)) {
+    duk_pop_n(ctx, 2 + nargs);
+    return;
+  }
+  duk_insert(ctx, -(nargs + 2));
+  // stack: fn args... this
+  duk_insert(ctx, -(nargs + 1));
+  // stack: fn this args...
+  duk_call_method(ctx, nargs);
+  // stack: result
+  duk_pop(ctx);
 }
