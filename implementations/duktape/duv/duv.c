@@ -37,6 +37,7 @@ static const duk_function_list_entry duv_stream_methods[] = {
   {"isReadable", duv_is_readable, 0},
   {"isWritable", duv_is_writable, 0},
   {"setBlocking", duv_stream_set_blocking, 1},
+  {0,0,0}
 };
 
 static const duk_function_list_entry duv_tcp_methods[] = {
@@ -48,6 +49,7 @@ static const duk_function_list_entry duv_tcp_methods[] = {
   {"getpeername", duv_tcp_getpeername, 0},
   {"getsockname", duv_tcp_getsockname, 0},
   {"connect", duv_tcp_connect, 3},
+  {0,0,0}
 };
 
 // // req.c
@@ -60,6 +62,7 @@ static const duk_function_list_entry duv_funcs[] = {
 
   // libuv handle constructors
   {"Timer", duv_timer, 0},
+  {"Tcp", duv_tcp, 0},
 
   // // pipe.c
   // {"new_pipe", duv_new_pipe, 1},
@@ -137,16 +140,23 @@ static const duk_function_list_entry duv_funcs[] = {
 };
 
 duk_ret_t duv_push_module(duk_context *ctx) {
-  // duv
+
+  // stack: nucleus
+
+  // uv
   duk_push_object(ctx);
   duk_put_function_list(ctx, -1, duv_funcs);
 
-  // duv.Handle.prototype
+  // stack: nucleus uv
+
+  // uv.Handle.prototype
   duk_push_object(ctx);
   duk_put_function_list(ctx, -1, duv_handle_methods);
-  duk_get_prop_string(ctx, -2, "Timer");
 
-  // duv.Timer.prototype
+  // stack: nucleus uv Handle.prototype
+
+  // uv.Timer.prototype
+  duk_get_prop_string(ctx, -2, "Timer");
   duk_push_object(ctx);
   duk_put_function_list(ctx, -1, duv_timer_methods);
   duk_dup(ctx, -3);
@@ -154,8 +164,35 @@ duk_ret_t duv_push_module(duk_context *ctx) {
   duk_put_prop_string(ctx, -2, "prototype");
   duk_pop(ctx);
 
-  // pop Handle.prototype
+  // stack: nucleus uv Handle.prototype
+
+  // uv.Stream.prototype
+  duk_push_object(ctx);
+  duk_put_function_list(ctx, -1, duv_stream_methods);
+  duk_dup(ctx, -2);
+  duk_set_prototype(ctx, -2);
+
+  // stack: nucleus uv Handle.prototype Stream.prototype
+
+  // uv.Tcp.prototype
+  duk_get_prop_string(ctx, -3, "Tcp");
+  // stack: nucleus uv Handle.prototype Stream.prototype Tcp
+  duk_push_object(ctx);
+  duk_put_function_list(ctx, -1, duv_tcp_methods);
+  // stack: nucleus uv Handle.prototype Stream.prototype Tcp Tcp.prototype
+  duk_dup(ctx, -3);
+  // stack: nucleus uv Handle.prototype Stream.prototype Tcp Tcp.prototype Stream.prototype
+  duk_set_prototype(ctx, -2);
+  // stack: nucleus uv Handle.prototype Stream.prototype Tcp Tcp.prototype
+  duk_put_prop_string(ctx, -2, "prototype");
+  // stack: nucleus uv Handle.prototype Stream.prototype Tcp
   duk_pop(ctx);
+
+  // stack: nucleus uv Handle.prototype Stream.prototype
+
+  duk_pop_2(ctx);
+
+  // stack: nucleus uv
 
   return 1;
 }

@@ -5,11 +5,12 @@
 duk_ret_t duv_tostring(duk_context *ctx) {
   duk_push_this(ctx);
   duk_get_prop_string(ctx, -1, "\xffuv-type");
+  if (duk_is_undefined(ctx, -1)) return 0;
   duk_get_prop_string(ctx, -2, "\xffuv-data");
   const char* type = duv_type_to_string(duk_get_int(ctx, -2));
   void* data = duk_get_buffer(ctx, -1, 0);
   duk_pop_3(ctx);
-  duk_push_sprintf(ctx, "[%s %"PRIXPTR"]", type, data);
+  duk_push_sprintf(ctx, "[%s %p]", type, data);
   return 1;
 }
 

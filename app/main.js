@@ -9,11 +9,22 @@ var uv = nucleus.uv;
 
 print("\nTimer.prototype");
 p(uv.Timer.prototype);
-var timer = new uv.Timer();
+print("Handle.prototype (via Timer.prototype)");
+p(uv.Timer.prototype.__proto__);
+
+print("\nTcp.prototype");
+p(uv.Tcp.prototype);
+print("Stream.prototype (via Tcp.prototype)");
+p(uv.Tcp.prototype.__proto__);
+print("Handle.prototype (via Stream.prototype)");
+p(uv.Tcp.prototype.__proto__.__proto__);
 
 print("\nTesting uv.walk");
+var timer = new uv.Timer();
+var tcp = new uv.Tcp();
 uv.walk(p);
 timer.close();
+tcp.close();
 
 print("\nTesting simple timeout");
 var timer = new uv.Timer();
