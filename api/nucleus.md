@@ -1,4 +1,6 @@
-# `global.nucleus` Interface
+# Nucleus API
+
+Nucleus itself if a spec for an interface.  This documents that interface.
 
 ## System
 
