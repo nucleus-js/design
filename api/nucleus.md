@@ -105,4 +105,4 @@ the core and exposed through sub-objects.
 ### nucleus.uv
 
 This exposed bindings to libuv. Full documentation can be found at
-[docs/uv.md](./uv.md).
+[api/uv.md](./uv.md).
