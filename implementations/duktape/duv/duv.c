@@ -4,6 +4,7 @@
 #include "loop.h"
 #include "handle.h"
 #include "timer.h"
+#include "stream.h"
 
 static const duk_function_list_entry duv_handle_methods[] = {
   {"inspect", duv_tostring, 0},
@@ -26,20 +27,20 @@ static const duk_function_list_entry duv_timer_methods[] = {
   {0,0,0}
 };
 
+static const duk_function_list_entry duv_stream_methods[] = {
+  {"shutdown", duv_shutdown, 1},
+  {"listen", duv_listen, 2},
+  {"accept", duv_accept, 1},
+  {"readRtart", duv_read_start, 1},
+  {"readStop", duv_read_stop, 0},
+  {"write", duv_write, 2},
+  {"isReadable", duv_is_readable, 0},
+  {"isWritable", duv_is_writable, 0},
+  {"setBlocking", duv_stream_set_blocking, 1},
+};
+
 // // req.c
 // {"cancel", duv_cancel, 1},
-
-// // stream.c
-// {"shutdown", duv_shutdown, 2},
-// {"listen", duv_listen, 3},
-// {"accept", duv_accept, 2},
-// {"read_start", duv_read_start, 2},
-// {"read_stop", duv_read_stop, 1},
-// {"write", duv_write, 3},
-// {"is_readable", duv_is_readable, 1},
-// {"is_writable", duv_is_writable, 1},
-// {"stream_set_blocking", duv_stream_set_blocking, 2},
-
 
 static const duk_function_list_entry duv_funcs[] = {
   // loop.c
