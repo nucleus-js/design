@@ -1,8 +1,8 @@
 # `global.nucleus` Interface
 
-## Os Integration
+## System
 
-These functions integrate with the OS.
+These functions integrate with the operating system.
 
 ### nucleus.cmd
 
@@ -35,9 +35,9 @@ Set an environment variable by name.
 
 Iterate through environment variables.
 
-## JS Runtime
+## Runtime
 
-These give access to the JS runtime.
+These give access to the JavaScript runtime.
 
 ### nucleus.engine
 
@@ -52,7 +52,7 @@ and run in function mode.
 TODO: should add access to other compile modes?  How portable can this be
 between engines?
 
-## Resource Bundle APIs
+## Resource
 
 These APIs give access to the resource bundle.
 
