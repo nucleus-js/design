@@ -52,7 +52,7 @@ and run in function mode.
 TODO: should add access to other compile modes?  How portable can this be
 between engines?
 
-## Resource
+## Resources
 
 These APIs give access to the resource bundle.
 
