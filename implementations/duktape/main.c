@@ -473,13 +473,6 @@ int main(int argc, char *argv[]) {
   duk_put_nucleus(ctx, argc, argv, argstart);
 
   // Run main.js function
-  printf("\n\nRunning %s:main.js", base);
-  if (isZip) {
-    printf(" from zip.\n");
-  }
-  else {
-    printf(" from filesystem.\n");
-  }
   duk_push_string(ctx, "nucleus.dofile('main.js')");
   if (duk_peval(ctx)) {
     fprintf(stderr, "Uncaught %s\n", duk_safe_to_string(ctx, -1));
