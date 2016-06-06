@@ -5,28 +5,19 @@
 #include "handle.h"
 #include "timer.h"
 
-static duk_ret_t duv_tostring(duk_context *ctx) {
-  duk_push_this(ctx);
-  duk_get_prop_string(ctx, -1, "\xffuv-type");
-  duk_get_prop_string(ctx, -2, "\xffuv-data");
-  const char* type = duv_type_to_string(duk_get_int(ctx, -2));
-  void* data = duk_get_buffer(ctx, -1, 0);
-  duk_pop_3(ctx);
-  duk_push_sprintf(ctx, "[%s %"PRIXPTR"]", type, data);
-  return 1;
-}
-
-
 static const duk_function_list_entry duv_handle_methods[] = {
   {"inspect", duv_tostring, 0},
   {"toString", duv_tostring, 0},
   {"close", duv_close, 1},
+  {"isActive", duv_is_active, 0},
+  {"isClosing", duv_is_closing, 0},
+  {"ref", duv_ref, 0},
+  {"unref", duv_unref, 0},
+  {"hasRef", duv_has_ref, 0},
   {0,0,0}
 };
 
 static const duk_function_list_entry duv_timer_methods[] = {
-  {"inspect", duv_tostring, 0},
-  {"toString", duv_tostring, 0},
   {"start", duv_timer_start, 3},
   {"stop", duv_timer_stop, 0},
   {"again", duv_timer_again, 0},

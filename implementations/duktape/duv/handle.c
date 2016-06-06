@@ -1,6 +1,18 @@
 #include "handle.h"
 #include "utils.h"
 
+
+duk_ret_t duv_tostring(duk_context *ctx) {
+  duk_push_this(ctx);
+  duk_get_prop_string(ctx, -1, "\xffuv-type");
+  duk_get_prop_string(ctx, -2, "\xffuv-data");
+  const char* type = duv_type_to_string(duk_get_int(ctx, -2));
+  void* data = duk_get_buffer(ctx, -1, 0);
+  duk_pop_3(ctx);
+  duk_push_sprintf(ctx, "[%s %"PRIXPTR"]", type, data);
+  return 1;
+}
+
 void duv_on_close(uv_handle_t *handle) {
   duk_context *ctx = handle->data;
   duv_push_handle(ctx, handle);
@@ -21,4 +33,25 @@ duk_ret_t duv_close(duk_context *ctx) {
   duk_put_prop_string(ctx, -2, "\xffon-close");
   uv_close(handle, duv_on_close);
   return 0;
+}
+
+
+duk_ret_t duv_is_active(duk_context *ctx) {
+  duk_error(ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "TODO: Implement duv_is_active");
+}
+
+duk_ret_t duv_is_closing(duk_context *ctx) {
+  duk_error(ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "TODO: Implement duv_is_closing");
+}
+
+duk_ret_t duv_ref(duk_context *ctx) {
+  duk_error(ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "TODO: Implement duv_ref");
+}
+
+duk_ret_t duv_unref(duk_context *ctx) {
+  duk_error(ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "TODO: Implement duv_unref");
+}
+
+duk_ret_t duv_has_ref(duk_context *ctx) {
+  duk_error(ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "TODO: Implement duv_has_ref");
 }
