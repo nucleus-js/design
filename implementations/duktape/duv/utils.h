@@ -32,4 +32,6 @@ void* duv_require_this_handle(duk_context *ctx, duv_type_mask_t mask);
 // Return value is not left on the stack.
 void duv_call_callback(uv_handle_t* handle, const char* key, int nargs);
 
+void duv_get_data(duk_context *ctx, int index, uv_buf_t *buf);
+
 #endif

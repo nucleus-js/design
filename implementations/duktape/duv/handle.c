@@ -21,7 +21,7 @@ duk_ret_t duv_close(duk_context *ctx) {
     {0,0}
   });
   uv_handle_t *handle = duv_require_this_handle(ctx, DUV_HANDLE_MASK);
-  duk_put_prop_string(ctx, -2, "\xffon-close");
+  duk_put_prop_string(ctx, 0, "\xffon-close");
   uv_close(handle, duv_on_close);
   return 0;
 }

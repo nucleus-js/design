@@ -92,6 +92,7 @@ server.listen(128, function (err) {
   p("client", client, client.getpeername());
   client.readStart(function (err, chunk) {
     if (err) throw err;
+    p("read", chunk);
     if (chunk) {
       client.write(chunk);
     }
@@ -104,6 +105,24 @@ server.listen(128, function (err) {
   });
 });
 p("server", server, server.getsockname());
+
+var client = new uv.Tcp();
+client.connect("127.0.0.1", 8080, function (err) {
+  if (err) throw err;
+  p("client connected", client, client.getpeername(), client.getsockname());
+  client.readStart(function (err, chunk) {
+    if (err) throw err;
+    p("client onread", chunk);
+    if (!chunk) {
+      client.close();
+    }
+  });
+  client.write("Hello", function (err) {
+    if (err) throw err;
+    client.write("World");
+    client.shutdown();
+  });
+});
 uv.run();
 
 print("\nTesting scandir at root");

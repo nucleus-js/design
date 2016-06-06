@@ -126,3 +126,12 @@ void duv_call_callback(uv_handle_t* handle, const char* key, int nargs) {
   // stack: result
   duk_pop(ctx);
 }
+
+void duv_get_data(duk_context *ctx, int index, uv_buf_t *buf) {
+  if (duk_is_string(ctx, index)) {
+    buf->base = (char*) duk_get_lstring(ctx, index, &buf->len);
+  }
+  else {
+    buf->base = duk_get_buffer(ctx, index, &buf->len);
+  }
+}

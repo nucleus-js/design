@@ -1,5 +1,6 @@
 #include "tcp.h"
 #include "utils.h"
+#include "callbacks.h"
 
 duk_ret_t duv_tcp(duk_context *ctx) {
   uv_tcp_t *tcp = duk_push_fixed_buffer(ctx, sizeof(uv_tcp_t));
@@ -162,5 +163,16 @@ duk_ret_t duv_tcp_connect(duk_context *ctx) {
     {0,0}
   });
   uv_tcp_t *tcp = duv_require_this_handle(ctx, DUV_TCP_MASK);
-  duk_error(ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "TODO: Implement duv_tcp_connect %p", tcp);
+  duk_put_prop_string(ctx, 0, "\xffon-connect");
+  uv_connect_t *req = duk_push_fixed_buffer(ctx, sizeof(*req));
+  duk_put_prop_string(ctx, 0, "\xffreq-connect");
+  const char *host = duk_get_string(ctx, 1);
+  int port = duk_get_number(ctx, 2);
+  struct sockaddr_storage addr;
+  if (uv_ip4_addr(host, port, (struct sockaddr_in*)&addr) &&
+      uv_ip6_addr(host, port, (struct sockaddr_in6*)&addr)) {
+    duk_error(ctx, DUK_ERR_TYPE_ERROR, "Invalid IP address or port");
+  }
+  duv_check(ctx, uv_tcp_connect(req, tcp, (struct sockaddr*)&addr, duv_on_connect));
+  return 0;
 }

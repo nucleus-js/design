@@ -12,18 +12,12 @@ duk_ret_t duv_shutdown(duk_context *ctx) {
     {0,0}
   });
   uv_stream_t *stream = duv_require_this_handle(ctx, DUV_STREAM_MASK);
-  duk_error(ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "TODO: Implement duv_shutdown %p", stream);
-}
-
-static void duv_on_connection(uv_stream_t *server, int status) {
-  duk_context *ctx = server->data;
-  if (status) {
-    duk_push_error_object(ctx, DUK_ERR_ERROR, "%s: %s", uv_err_name(status), uv_strerror(status));
-  }
-  else {
-    duk_push_null(ctx);
-  }
-  duv_call_callback((uv_handle_t*)server, "\xffon-connection", 1);
+  duk_put_prop_string(ctx, 0, "\xffon-shutdown");
+  uv_shutdown_t *req = duk_push_fixed_buffer(ctx, sizeof(*req));
+  duk_put_prop_string(ctx, 0, "\xffreq-shutdown");
+  duv_check(ctx, uv_shutdown(req, stream, duv_on_shutdown));
+  return 0;
+  // TODO: expose req to javascript so it can be canceled?
 }
 
 duk_ret_t duv_listen(duk_context *ctx) {
@@ -33,7 +27,7 @@ duk_ret_t duv_listen(duk_context *ctx) {
     {0,0}
   });
   uv_stream_t *stream = duv_require_this_handle(ctx, DUV_STREAM_MASK);
-  duk_put_prop_string(ctx, -3, "\xffon-connection");
+  duk_put_prop_string(ctx, 0, "\xffon-connection");
   duv_check(ctx, uv_listen(stream,
     duk_get_int(ctx, 1),
     duv_on_connection
@@ -64,21 +58,52 @@ duk_ret_t duv_read_start(duk_context *ctx) {
 }
 
 duk_ret_t duv_read_stop(duk_context *ctx) {
-  duk_error(ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "TODO: Implement duv_read_stop");
+  uv_stream_t *stream = duv_require_this_handle(ctx, DUV_STREAM_MASK);
+  duk_del_prop_string(ctx, 0, "\xffon-read");
+  duv_check(ctx, uv_read_stop(stream));
+  return 0;
 }
 
 duk_ret_t duv_write(duk_context *ctx) {
-  duk_error(ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "TODO: Implement duv_write");
+  dschema_check(ctx, (const duv_schema_entry[]) {
+    {"data", dschema_is_data},
+    {"callback", dschema_is_continuation},
+    {0,0}
+  });
+  uv_stream_t *stream = duv_require_this_handle(ctx, DUV_STREAM_MASK);
+  duk_put_prop_string(ctx, 0, "\xffon-write");
+  uv_write_t *req = duk_push_fixed_buffer(ctx, sizeof(*req));
+  duk_put_prop_string(ctx, 0, "\xffreq-write");
+  uv_buf_t buf;
+  duv_get_data(ctx, 1, &buf);
+  duv_check(ctx, uv_write(req, stream, &buf, 1, duv_on_write));
+  req->data = stream;
+  return 0;
+  // TODO: expose req to javascript so it can be canceled?
+  // TODO: handle case where multiple concurrent writes are in flight for a
+  //       single stream.
 }
 
 duk_ret_t duv_is_readable(duk_context *ctx) {
-  duk_error(ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "TODO: Implement duv_is_readable");
+  uv_stream_t *stream = duv_require_this_handle(ctx, DUV_STREAM_MASK);
+  duk_push_boolean(ctx, uv_is_readable(stream));
+  return 1;
 }
 
 duk_ret_t duv_is_writable(duk_context *ctx) {
-  duk_error(ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "TODO: Implement duv_is_writable");
+  uv_stream_t *stream = duv_require_this_handle(ctx, DUV_STREAM_MASK);
+  duk_push_boolean(ctx, uv_is_writable(stream));
+  return 1;
 }
 
 duk_ret_t duv_stream_set_blocking(duk_context *ctx) {
-  duk_error(ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "TODO: Implement duv_stream_set_blocking");
+  dschema_check(ctx, (const duv_schema_entry[]) {
+    {"blocking", duk_is_boolean},
+    {0,0}
+  });
+  uv_stream_t *stream = duv_require_this_handle(ctx, DUV_STREAM_MASK);
+  duv_check(ctx, uv_stream_set_blocking(stream,
+    duk_get_int(ctx, 1)
+  ));
+  return 0;
 }
