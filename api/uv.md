@@ -159,7 +159,58 @@ Get the timer repeat value.
 
 ## Stream
 
-*TODO: document this module*
+Stream handles provide an abstraction of a duplex communication channel. Stream
+is an abstract type, libuv provides 3 stream implementations in the form of Tcp,
+Pipe, and Tty.
+
+### `stream.shutdown(onShutdown) -> shutdownReq`
+
+Shutdown the outgoing (write) side of a duplex stream. It waits for pending
+write requests to complete. The `onShutdown` callback is called after shutdown
+is complete.
+
+### `stream.listen(backlog, onConnection)`
+
+Start listening for incoming connections. `backlog` indicates the number of
+connections the kernel might queue, same as listen(2). When a new incoming
+connection is received the `onConnection` callback is called.
+
+### `stream.accept(socket)`
+
+This call is used in conjunction with `stream.listen()` to accept incoming
+connections. Call this function after receiving a `onConnection` call to accept
+the connection.
+
+When the `onConnection` callback is called it is guaranteed that this function
+will complete successfully the first time. If you attempt to use it more than
+once, it may fail. It is suggested to only call this function once per
+`onConnection` call.
+
+*Note: server and client must be handles running on the same loop.*
+
+### `stream.readStart(onRead(err, data))`
+
+Read data from an incoming stream. The `onRead` callback will be made several
+times until there is no more data to read or `stream.readStop()` is called.
+
+### `stream.readStop()`
+
+Stop reading data from the stream. The `onRead` callback will no longer be
+called.
+
+This function is idempotent and may be safely called on a stopped stream.
+
+### `stream.write(data, onWrite) -> writeReq`
+
+Write data to stream. `data` can be either a string or a buffer type.
+
+### `stream.isReadable() -> bool`
+
+Returns true if the stream is readable, false otherwise.
+
+### `stream.isWritable() -> bool`
+
+Returns true if the stream is writable, false otherwise.
 
 ## Tcp
 
