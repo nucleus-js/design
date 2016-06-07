@@ -28,21 +28,31 @@ duk_ret_t duv_close(duk_context *ctx) {
 
 
 duk_ret_t duv_is_active(duk_context *ctx) {
-  duk_error(ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "TODO: Implement duv_is_active");
+  uv_handle_t *handle = duv_require_this_handle(ctx, DUV_HANDLE_MASK);
+  duk_push_boolean(ctx, uv_is_active(handle));
+  return 1;
 }
 
 duk_ret_t duv_is_closing(duk_context *ctx) {
-  duk_error(ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "TODO: Implement duv_is_closing");
+  uv_handle_t *handle = duv_require_this_handle(ctx, DUV_HANDLE_MASK);
+  duk_push_boolean(ctx, uv_is_closing(handle));
+  return 1;
 }
 
 duk_ret_t duv_ref(duk_context *ctx) {
-  duk_error(ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "TODO: Implement duv_ref");
+  uv_handle_t *handle = duv_require_this_handle(ctx, DUV_HANDLE_MASK);
+  uv_ref(handle);
+  return 0;
 }
 
 duk_ret_t duv_unref(duk_context *ctx) {
-  duk_error(ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "TODO: Implement duv_unref");
+  uv_handle_t *handle = duv_require_this_handle(ctx, DUV_HANDLE_MASK);
+  uv_unref(handle);
+  return 0;
 }
 
 duk_ret_t duv_has_ref(duk_context *ctx) {
-  duk_error(ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "TODO: Implement duv_has_ref");
+  uv_handle_t *handle = duv_require_this_handle(ctx, DUV_HANDLE_MASK);
+  duk_push_boolean(ctx, uv_has_ref(handle));
+  return 1;
 }

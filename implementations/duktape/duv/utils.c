@@ -4,6 +4,7 @@
 const char* duv_type_to_string(duv_type_t type) {
   switch (type) {
     case DUV_TIMER: return "uv_timer_t";
+    case DUV_PREPARE: return "uv_prepare_t";
     case DUV_TCP: return "uv_tcp_t";
     case DUV_PIPE: return "uv_pipe_t";
   }
@@ -14,6 +15,7 @@ const char* duv_mask_to_string(duv_type_mask_t mask) {
   switch (mask) {
     case DUV_HANDLE_MASK: return "uv_handle_t";
     case DUV_TIMER_MASK: return "uv_timer_t";
+    case DUV_PREPARE_MASK: return "uv_prepare_t";
     case DUV_STREAM_MASK: return "uv_stream_t";
     case DUV_TCP_MASK: return "uv_tcp_t";
     case DUV_PIPE_MASK: return "uv_pipe_t";

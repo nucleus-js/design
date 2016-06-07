@@ -472,6 +472,7 @@ int main(int argc, char *argv[]) {
   // Run main.js function
   duk_push_string(ctx, "nucleus.dofile('main.js')");
   if (duk_peval(ctx)) {
+    duk_dump_context_stderr(ctx);
     fprintf(stderr, "Uncaught %s\n", duk_safe_to_string(ctx, -1));
     exit(1);
   }

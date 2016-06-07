@@ -6,6 +6,11 @@ p(uv.Timer.prototype);
 print("Handle.prototype (via Timer.prototype)");
 p(Object.getPrototypeOf(uv.Timer.prototype));
 
+print("\nPrepare.prototype");
+p(uv.Prepare.prototype);
+print("Handle.prototype (via Prepare.prototype)");
+p(Object.getPrototypeOf(uv.Prepare.prototype));
+
 print("\nTcp.prototype");
 p(uv.Tcp.prototype);
 print("Stream.prototype (via Tcp.prototype)");
@@ -20,6 +25,12 @@ var tcp = new uv.Tcp();
 uv.walk(p);
 timer.close();
 tcp.close();
+
+var prepare = new uv.Prepare();
+prepare.start(function () {
+  print("prepare...");
+});
+prepare.unref();
 
 print("\nTesting simple timeout");
 var timer = new uv.Timer();

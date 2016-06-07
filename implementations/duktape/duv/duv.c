@@ -3,6 +3,7 @@
 #include "loop.h"
 #include "handle.h"
 #include "timer.h"
+#include "prepare.h"
 #include "stream.h"
 #include "tcp.h"
 
@@ -24,6 +25,12 @@ static const duk_function_list_entry duv_timer_methods[] = {
   {"again", duv_timer_again, 0},
   {"setRepeat", duv_timer_set_repeat, 1},
   {"getRepeat", duv_timer_get_repeat, 0},
+  {0,0,0}
+};
+
+static const duk_function_list_entry duv_prepare_methods[] = {
+  {"start", duv_prepare_start, 1},
+  {"stop", duv_prepare_stop, 0},
   {0,0,0}
 };
 
@@ -62,6 +69,7 @@ static const duk_function_list_entry duv_funcs[] = {
 
   // libuv handle constructors
   {"Timer", duv_timer, 0},
+  {"Prepare", duv_prepare, 0},
   {"Tcp", duv_tcp, 0},
 
   // // pipe.c
@@ -159,6 +167,17 @@ duk_ret_t duv_push_module(duk_context *ctx) {
   duk_get_prop_string(ctx, -2, "Timer");
   duk_push_object(ctx);
   duk_put_function_list(ctx, -1, duv_timer_methods);
+  duk_dup(ctx, -3);
+  duk_set_prototype(ctx, -2);
+  duk_put_prop_string(ctx, -2, "prototype");
+  duk_pop(ctx);
+
+  // stack: nucleus uv Handle.prototype
+
+  // uv.Prepare.prototype
+  duk_get_prop_string(ctx, -2, "Prepare");
+  duk_push_object(ctx);
+  duk_put_function_list(ctx, -1, duv_prepare_methods);
   duk_dup(ctx, -3);
   duk_set_prototype(ctx, -2);
   duk_put_prop_string(ctx, -2, "prototype");

@@ -19,7 +19,7 @@ duk_ret_t duv_timer_start(duk_context *ctx) {
   uv_timer_t *timer = duv_require_this_handle(ctx, DUV_TIMER_MASK);
   int timeout = duk_get_int(ctx, 1);
   int repeat = duk_get_int(ctx, 2);
-  duk_put_prop_string(ctx, -4, "\xffon-timeout");
+  duk_put_prop_string(ctx, 0, "\xffon-timeout");
   duv_check(ctx, uv_timer_start(timer, duv_on_timeout, timeout, repeat));
   return 0;
 }
