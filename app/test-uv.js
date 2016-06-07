@@ -169,3 +169,32 @@ prepare.close();
 check.close();
 idle.close();
 uv.run();
+
+
+// Use uv.Async to implement nextTick
+var ticks = [];
+var ticker = new uv.Async(function () {
+
+  if (!ticks.length) return;
+  var list = ticks;
+  ticks = [];
+  ticker.unref();
+  list.forEach(function (cb) {
+    cb();
+  });
+});
+
+function nextTick(callback) {
+  ticks.push(callback);
+  ticker.ref();
+  ticker.send();
+}
+
+
+print("before");
+nextTick(function () {
+  print("tick");
+});
+print("after");
+uv.run();
+ticker.close();
