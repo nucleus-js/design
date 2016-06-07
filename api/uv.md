@@ -72,6 +72,8 @@ already referenced calling this function again will have no effect.
 Un-reference the given handle. References are idempotent, that is, if a handle
 is not referenced calling this function again will have no effect.
 
+---
+
 The libuv event loop (if run in the default mode) will run until there are no
 active and referenced handles left. The user can force the loop to exit early by
 unreferencing handles which are active, for example by calling `timer.unref()`
