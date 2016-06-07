@@ -8,6 +8,7 @@ typedef enum {
   DUV_TIMER,
   DUV_PREPARE,
   DUV_CHECK,
+  DUV_IDLE,
   DUV_TCP,
   DUV_PIPE,
 } duv_type_t;
@@ -17,11 +18,13 @@ typedef enum {
     1 << DUV_TIMER |
     1 << DUV_PREPARE |
     1 << DUV_CHECK |
+    1 << DUV_IDLE |
     1 << DUV_TCP |
     1 << DUV_PIPE,
   DUV_TIMER_MASK = 1 << DUV_TIMER,
   DUV_PREPARE_MASK = 1 << DUV_PREPARE,
   DUV_CHECK_MASK = 1 << DUV_CHECK,
+  DUV_IDLE_MASK = 1 << DUV_IDLE,
   DUV_STREAM_MASK = 1 << DUV_TCP | 1 << DUV_PIPE,
   DUV_TCP_MASK = 1 << DUV_TCP,
   DUV_PIPE_MASK = 1 << DUV_PIPE,

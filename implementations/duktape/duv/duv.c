@@ -5,6 +5,7 @@
 #include "timer.h"
 #include "prepare.h"
 #include "check.h"
+#include "idle.h"
 #include "stream.h"
 #include "tcp.h"
 
@@ -38,6 +39,12 @@ static const duk_function_list_entry duv_prepare_methods[] = {
 static const duk_function_list_entry duv_check_methods[] = {
   {"start", duv_check_start, 1},
   {"stop", duv_check_stop, 0},
+  {0,0,0}
+};
+
+static const duk_function_list_entry duv_idle_methods[] = {
+  {"start", duv_idle_start, 1},
+  {"stop", duv_idle_stop, 0},
   {0,0,0}
 };
 
@@ -78,6 +85,7 @@ static const duk_function_list_entry duv_funcs[] = {
   {"Timer", duv_timer, 0},
   {"Prepare", duv_prepare, 0},
   {"Check", duv_new_check, 0},
+  {"Idle", duv_idle, 0},
   {"Tcp", duv_tcp, 0},
 
   // // pipe.c
@@ -197,6 +205,17 @@ duk_ret_t duv_push_module(duk_context *ctx) {
   duk_get_prop_string(ctx, -2, "Check");
   duk_push_object(ctx);
   duk_put_function_list(ctx, -1, duv_check_methods);
+  duk_dup(ctx, -3);
+  duk_set_prototype(ctx, -2);
+  duk_put_prop_string(ctx, -2, "prototype");
+  duk_pop(ctx);
+
+  // stack: nucleus uv Handle.prototype
+
+  // uv.Idle.prototype
+  duk_get_prop_string(ctx, -2, "Idle");
+  duk_push_object(ctx);
+  duk_put_function_list(ctx, -1, duv_idle_methods);
   duk_dup(ctx, -3);
   duk_set_prototype(ctx, -2);
   duk_put_prop_string(ctx, -2, "prototype");

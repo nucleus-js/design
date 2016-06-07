@@ -16,6 +16,11 @@ p(uv.Check.prototype);
 print("Handle.prototype (via Check.prototype)");
 p(Object.getPrototypeOf(uv.Check.prototype));
 
+print("\nIdle.prototype");
+p(uv.Idle.prototype);
+print("Handle.prototype (via Idle.prototype)");
+p(Object.getPrototypeOf(uv.Idle.prototype));
+
 print("\nTcp.prototype");
 p(uv.Tcp.prototype);
 print("Stream.prototype (via Tcp.prototype)");
@@ -42,6 +47,13 @@ check.start(function () {
   print("check...");
 });
 check.unref();
+
+var idle = new uv.Idle();
+idle.start(function () {
+  print("idle...");
+  idle.stop();
+});
+idle.unref();
 
 print("\nTesting simple timeout");
 var timer = new uv.Timer();
