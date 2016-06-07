@@ -203,7 +203,7 @@ Wakeup the event loop and call the async handle’s callback.
 *Note: It’s safe to call this function from any thread. The callback will be
 called on the loop thread.*
 
-**Warning: libuv will coalesce calls to `async.send()``, that is, not every call
+**Warning: libuv will coalesce calls to `async.send()`, that is, not every call
 to it will yield an execution of the callback. For example: if `async.send()`
 is called 5 times in a row before the callback is called, the callback will only
 be called once. If `async.send()` is called again after the callback was called,
@@ -302,7 +302,7 @@ simultaneous accepts can significantly improve the rate of accepting connections
 (which is why it is enabled by default) but may lead to uneven load distribution
 in multi-process setups.
 
-### `tcp.bind(host, port)``
+### `tcp.bind(host, port)`
 
 Bind the handle to an address and port. `host` is a string and can be an IPV4 or
 IPV6 value.
