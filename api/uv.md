@@ -2,10 +2,10 @@
 
 This addon is located at `global.nucleus.uv` in the JS runtime.
 
-## Event Loop
+## `uv_loop_t` - Event Loop
 
-Libuv loop instances will not be exposed directly to JavaScript because it
-generally complicates things needlessly.  If your VM supports having multiple
+Libuv `uv_loop_t` instances will not be exposed directly to JavaScript because
+it generally complicates things needlessly.  If your VM supports having multiple
 threads, then each one generally needs to have it's own event loop.  Pairing
 event loops with VM contexts with threads seems to work well.
 
@@ -19,7 +19,7 @@ implicitly run after running through the first tick of your first JS file.
 
 This function iterates through all the handles currently in the loop.
 
-## Handle
+## `uv_handle_t` - Base handle
 
 `Handle` is the base type for all libuv handle types.
 
@@ -85,7 +85,7 @@ counter, so both operations are idempotent.
 All handles are referenced when active by default, see `handle.isActive` for a
 more detailed explanation on what being active involves.
 
-## Timer
+## `uv_timer_t` - Timer handle
 
 Timer handles are used to schedule callbacks to be called in the future.
 
@@ -129,7 +129,7 @@ the next timeout.*
 
 Get the timer repeat value.
 
-## Prepare
+## `uv_prepare_t` - Prepare handle
 
 Prepare handles will run the given callback once per loop iteration, right
 before polling for i/o.
@@ -146,7 +146,7 @@ Start the handle with the given callback.
 
 Stop the handle, the callback will no longer be called.
 
-## Check
+## `uv_check_t` - Check handle
 
 Check handles will run the given callback once per loop iteration, right after
 polling for i/o.
@@ -163,7 +163,7 @@ Start the handle with the given callback.
 
 Stop the handle, the callback will no longer be called.
 
-## Idle
+## `uv_idle_t` - Idle handle
 
 Idle handles will run the given callback once per loop iteration, right before
 the uv_prepare_t handles.
@@ -187,7 +187,7 @@ Start the handle with the given callback.
 
 Stop the handle, the callback will no longer be called.
 
-## Async
+## `uv_async_t` - Async handle
 
 Async handles allow the user to “wakeup” the event loop and get a callback
 called from another thread.
@@ -209,9 +209,34 @@ is called 5 times in a row before the callback is called, the callback will only
 be called once. If `async.send()` is called again after the callback was called,
 it will be called again.**
 
-## `uv_poll_t`
+## `uv_poll_t` - Poll handle
 
-*TODO: document this module*
+Poll handles are used to watch file descriptors for readability, writability and
+disconnection similar to the purpose of poll(2).
+
+The purpose of poll handles is to enable integrating external libraries that
+rely on the event loop to signal it about the socket status changes, like c-ares
+or libssh2. Using `uv_poll_t` for any other purpose is not recommended;
+`uv_tcp_t`, `uv_udp_t`, etc. provide an implementation that is faster and more
+scalable than what can be achieved with `uv_poll_t`, especially on Windows.
+
+It is possible that poll handles occasionally signal that a file descriptor is
+readable or writable even when it isn’t. The user should therefore always be
+prepared to handle EAGAIN or equivalent when it attempts to read from or write
+to the fd.
+
+It is not okay to have multiple active poll handles for the same socket, this
+can cause libuv to busyloop or otherwise malfunction.
+
+The user should not close a file descriptor while it is being polled by an
+active poll handle. This can cause the handle to report an error, but it might
+also start polling another socket. However the fd can be safely closed
+immediately after a call to `poll.stop()` or `poll.close()`.
+
+*Note: On windows only sockets can be polled with poll handles. On Unix any file
+descriptor that would be accepted by poll(2) can be used.*
+
+*Note: On AIX, watching for disconnection is not supported.*
 
 ## `uv_signal_t`
 
