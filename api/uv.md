@@ -120,10 +120,10 @@ For example, if a 50ms repeating timer first runs for 17ms, it will be scheduled
 to run again 33ms later. If other tasks consume more than the 33ms following the
 first timer callback, then the callback will run as soon as possible.
 
-**Note: If the repeat value is set from a timer callback it does not immediately
+*Note: If the repeat value is set from a timer callback it does not immediately
 take effect. If the timer was non-repeating before, it will have been stopped.
 If it was repeating, then the old repeat value will have been used to schedule
-the next timeout.**
+the next timeout.*
 
 ### `timer.getRepeat() → repeat`
 
@@ -201,7 +201,7 @@ Create a new Async instance.
 Wakeup the event loop and call the async handle’s callback.
 
 *Note: It’s safe to call this function from any thread. The callback will be
-called on the loop thread.
+called on the loop thread.*
 
 **Warning: libuv will coalesce calls to `async.send()``, that is, not every call
 to it will yield an execution of the callback. For example: if `async.send()`
