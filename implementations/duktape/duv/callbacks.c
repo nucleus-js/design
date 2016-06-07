@@ -31,6 +31,10 @@ void duv_on_idle(uv_idle_t *idle) {
   duv_call_callback((uv_handle_t*)idle, "\xffon-idle", 0);
 }
 
+void duv_on_async(uv_async_t *async) {
+  duv_call_callback((uv_handle_t*)async, "\xffon-async", 0);
+}
+
 void duv_on_read(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf) {
   duk_context *ctx = stream->data;
   if (nread >= 0) {

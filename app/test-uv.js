@@ -21,6 +21,11 @@ p(uv.Idle.prototype);
 print("Handle.prototype (via Idle.prototype)");
 p(Object.getPrototypeOf(uv.Idle.prototype));
 
+print("\nAsync.prototype");
+p(uv.Async.prototype);
+print("Handle.prototype (via Async.prototype)");
+p(Object.getPrototypeOf(uv.Async.prototype));
+
 print("\nTcp.prototype");
 p(uv.Tcp.prototype);
 print("Stream.prototype (via Tcp.prototype)");
@@ -28,13 +33,6 @@ var streamProto = Object.getPrototypeOf(uv.Tcp.prototype);
 p(streamProto);
 print("Handle.prototype (via Stream.prototype)");
 p(Object.getPrototypeOf(streamProto));
-
-print("\nTesting uv.walk");
-var timer = new uv.Timer();
-var tcp = new uv.Tcp();
-uv.walk(p);
-timer.close();
-tcp.close();
 
 var prepare = new uv.Prepare();
 prepare.start(function () {
@@ -46,14 +44,28 @@ var check = new uv.Check();
 check.start(function () {
   print("check...");
 });
-check.unref();
 
 var idle = new uv.Idle();
 idle.start(function () {
   print("idle...");
   idle.stop();
 });
+
+var async = new uv.Async(function () {
+  print("async...");
+});
+p("async", async);
+async.send();
+
+print("\nTesting uv.walk");
+var timer = new uv.Timer();
+var tcp = new uv.Tcp();
+uv.walk(p);
+timer.close();
+tcp.close();
+check.unref();
 idle.unref();
+async.unref();
 
 print("\nTesting simple timeout");
 var timer = new uv.Timer();

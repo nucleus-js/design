@@ -19,6 +19,9 @@ void duv_on_check(uv_check_t *check);
 // Idle method callbacks
 void duv_on_idle(uv_idle_t *idle);
 
+// Async method callbacks
+void duv_on_async(uv_async_t *async);
+
 // Stream method callbacks
 void duv_on_read(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf);
 void duv_on_write(uv_write_t *shutdown, int status);
