@@ -214,7 +214,54 @@ Returns true if the stream is writable, false otherwise.
 
 ## Tcp
 
-*TODO: document this module*
+TCP handles are used to represent both TCP streams and servers.
+
+`Tcp.prototype` inherits from `Stream.prototype`.
+
+### `tcp.open(fd)`
+
+Open an existing file descriptor or SOCKET as a TCP handle.
+
+The file descriptor is set to non-blocking mode.
+
+### `tcp.nodelay(enable)`
+
+Enable / disable Nagle’s algorithm.
+
+### `tcp.simultaneous_accepts(enable)`
+
+Enable / disable simultaneous asynchronous accept requests that are queued by
+the operating system when listening for new TCP connections.
+
+This setting is used to tune a TCP server for the desired performance. Having
+simultaneous accepts can significantly improve the rate of accepting connections
+(which is why it is enabled by default) but may lead to uneven load distribution
+in multi-process setups.
+
+### `tcp.bind(host, port)``
+
+Bind the handle to an address and port. `host` is a string and can be an IPV4 or
+IPV6 value.
+
+When the port is already taken, you can expect to see an UV_EADDRINUSE error
+from either `tcp.bind()`, `tcp.listen()` or `tcp.connect()`. That is, a
+successful call to this function does not guarantee that the call to
+`onConnection` or `onConnect` will succeed as well.
+
+### `tcp.getsockname()` -> {family, port, ip}
+
+Get the current address to which the handle is bound.
+
+### `tcp.getpeername()` -> {family, port, ip}
+
+Get the address of the peer connected to the handle.]
+
+### `tcp.connect(host, port, onConnection)`
+
+Establish an IPv4 or IPv6 TCP connection.
+
+The callback is made when the connection has been established or when a
+connection error happened.
 
 ## `uv_pipe_t`
 
