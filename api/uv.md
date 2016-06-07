@@ -1,6 +1,9 @@
 # LibUV API
 
-This addon is located at `global.nucleus.uv` in the JS runtime.
+This addon is located at `global.nucleus.uv` in the JS runtime.  These docs
+are heavily based on the [upstream libuv docs](http://docs.libuv.org/en/v1.x/),
+but copied here for convenience and modified to match the JavaScript interface
+to libuv.
 
 ## `uv_loop_t` - Event Loop
 
