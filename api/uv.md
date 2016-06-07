@@ -26,7 +26,7 @@ This function iterates through all the handles currently in the loop.
 All API methods defined here work with any handle type.The handle is the root
 class of most the libuv structures.
 
-### `handle.isActive() -> boolean`
+### `handle.isActive() → boolean`
 
 Returns `true` if the handle is active, `false` if it’s inactive. What “active”
 means depends on the type of handle:
@@ -43,7 +43,7 @@ Rule of thumb: if a handle of type `uv_foo_t` has a `foo.start()` function, then
 it’s active from the moment that function is called. Likewise, `foo.stop()`
 deactivates the handle again.
 
-### `handle.isClosing() -> boolean`
+### `handle.isClosing() → boolean`
 
 Returns true if the handle is closing or closed, false otherwise.
 
@@ -89,7 +89,7 @@ more detailed explanation on what being active involves.
 
 Timer handles are used to schedule callbacks to be called in the future.
 
-### `new Timer() -> timer`
+### `new Timer() → timer`
 
 Create a new timer instance.
 
@@ -125,25 +125,89 @@ take effect. If the timer was non-repeating before, it will have been stopped.
 If it was repeating, then the old repeat value will have been used to schedule
 the next timeout.**
 
-### `timer.getRepeat() -> repeat`
+### `timer.getRepeat() → repeat`
 
 Get the timer repeat value.
 
-## `uv_prepare_t`
+## Prepare
 
-*TODO: document this module*
+Prepare handles will run the given callback once per loop iteration, right
+before polling for i/o.
 
-## `uv_check_t`
+### `new uv.Prepare() → prepare`
 
-*TODO: document this module*
+Create a new Prepare instance.
 
-## `uv_idle_t`
+### `prepare.start(onPrepare)`
 
-*TODO: document this module*
+Start the handle with the given callback.
 
-## `uv_async_t`
+### `prepare.stop()`
 
-*TODO: document this module*
+Stop the handle, the callback will no longer be called.
+
+## Check
+
+Check handles will run the given callback once per loop iteration, right after
+polling for i/o.
+
+### `new uv.Check() → check`
+
+Create a new Check instance.
+
+### `check.start(onCheck)`
+
+Start the handle with the given callback.
+
+### `check.stop()`
+
+Stop the handle, the callback will no longer be called.
+
+## Idle
+
+Idle handles will run the given callback once per loop iteration, right before
+the uv_prepare_t handles.
+
+*Note: The notable difference with prepare handles is that when there are active
+idle handles, the loop will perform a zero timeout poll instead of blocking for
+i/o.*
+
+**Warning: Despite the name, idle handles will get their callbacks called on
+every loop iteration, not when the loop is actually “idle”.**
+
+### `new uv.Idle() → idle`
+
+Create a new Idle instance.
+
+### `idle.start(onIdle)`
+
+Start the handle with the given callback.
+
+### `idle.stop()`
+
+Stop the handle, the callback will no longer be called.
+
+## Async
+
+Async handles allow the user to “wakeup” the event loop and get a callback
+called from another thread.
+
+### `new uv.Async(onAsync)`
+
+Create a new Async instance.
+
+### `async.send()`
+
+Wakeup the event loop and call the async handle’s callback.
+
+*Note: It’s safe to call this function from any thread. The callback will be
+called on the loop thread.
+
+**Warning: libuv will coalesce calls to `async.send()``, that is, not every call
+to it will yield an execution of the callback. For example: if `async.send()`
+is called 5 times in a row before the callback is called, the callback will only
+be called once. If `async.send()` is called again after the callback was called,
+it will be called again.**
 
 ## `uv_poll_t`
 
@@ -163,7 +227,7 @@ Stream handles provide an abstraction of a duplex communication channel. Stream
 is an abstract type, libuv provides 3 stream implementations in the form of Tcp,
 Pipe, and Tty.
 
-### `stream.shutdown(onShutdown) -> shutdownReq`
+### `stream.shutdown(onShutdown) → shutdownReq`
 
 Shutdown the outgoing (write) side of a duplex stream. It waits for pending
 write requests to complete. The `onShutdown` callback is called after shutdown
@@ -200,15 +264,15 @@ called.
 
 This function is idempotent and may be safely called on a stopped stream.
 
-### `stream.write(data, onWrite) -> writeReq`
+### `stream.write(data, onWrite) → writeReq`
 
 Write data to stream. `data` can be either a string or a buffer type.
 
-### `stream.isReadable() -> bool`
+### `stream.isReadable() → bool`
 
 Returns true if the stream is readable, false otherwise.
 
-### `stream.isWritable() -> bool`
+### `stream.isWritable() → bool`
 
 Returns true if the stream is writable, false otherwise.
 
@@ -248,11 +312,11 @@ from either `tcp.bind()`, `tcp.listen()` or `tcp.connect()`. That is, a
 successful call to this function does not guarantee that the call to
 `onConnection` or `onConnect` will succeed as well.
 
-### `tcp.getsockname()` -> {family, port, ip}
+### `tcp.getsockname()` → {family, port, ip}
 
 Get the current address to which the handle is bound.
 
-### `tcp.getpeername()` -> {family, port, ip}
+### `tcp.getpeername()` → {family, port, ip}
 
 Get the address of the peer connected to the handle.]
 

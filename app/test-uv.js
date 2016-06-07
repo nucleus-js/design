@@ -152,3 +152,8 @@ client.connect("127.0.0.1", 8080, function (err) {
   });
 });
 uv.run();
+
+prepare.close();
+check.close();
+idle.close();
+uv.run();

@@ -5,20 +5,39 @@ const char* duv_type_to_string(duv_type_t type) {
   switch (type) {
     case DUV_TIMER: return "uv_timer_t";
     case DUV_PREPARE: return "uv_prepare_t";
+    case DUV_CHECK: return "uv_check_t";
+    case DUV_IDLE: return "uv_idle_t";
+    case DUV_ASYNC: return "uv_async_t";
+    case DUV_POLL: return "uv_poll_t";
+    case DUV_SIGNAL: return "uv_signal_t";
+    case DUV_PROCESS: return "uv_process_t";
     case DUV_TCP: return "uv_tcp_t";
     case DUV_PIPE: return "uv_pipe_t";
+    case DUV_TTY: return "uv_tty_t";
+    case DUV_UDP: return "uv_udp_t";
+    case DUV_FS_EVENT: return "uv_fs_event_t";
+    case DUV_FS_POLL: return "uv_fs_poll_t";
   }
   return "unknown";
 }
-
 const char* duv_mask_to_string(duv_type_mask_t mask) {
   switch (mask) {
     case DUV_HANDLE_MASK: return "uv_handle_t";
     case DUV_TIMER_MASK: return "uv_timer_t";
     case DUV_PREPARE_MASK: return "uv_prepare_t";
+    case DUV_CHECK_MASK: return "uv_check_t";
+    case DUV_IDLE_MASK: return "uv_idle_t";
+    case DUV_ASYNC_MASK: return "uv_async_t";
+    case DUV_POLL_MASK: return "uv_poll_t";
+    case DUV_SIGNAL_MASK: return "uv_signal_t";
+    case DUV_PROCESS_MASK: return "uv_process_t";
     case DUV_STREAM_MASK: return "uv_stream_t";
     case DUV_TCP_MASK: return "uv_tcp_t";
     case DUV_PIPE_MASK: return "uv_pipe_t";
+    case DUV_TTY_MASK: return "uv_tty_t";
+    case DUV_UDP_MASK: return "uv_udp_t";
+    case DUV_FS_EVENT_MASK: return "uv_fs_event_t";
+    case DUV_FS_POLL_MASK: return "uv_fs_poll_t";
   }
   return "unknown";
 }
