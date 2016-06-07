@@ -33,9 +33,16 @@ Read an environment variable by name
 
 Set an environment variable by name.
 
-### nucleus.scanenv(callback(name, value))
+### nucleus.unsetenv(name)
 
-Iterate through environment variables.
+Unset an environment variable.
+
+### nucleus.envkeys(showHidden) -> array of keys
+
+Get a list of all environment variables.
+
+On windows there are also hidden variables which can be shown by passing true to
+`showHidden`.
 
 ## Runtime
 

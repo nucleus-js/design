@@ -14,6 +14,7 @@
 #define MINIZ_HEADER_FILE_ONLY
 #include "../../deps/miniz.c"
 #include "duv/duv.h"
+#include "env.h"
 
 static duk_ret_t nucleus_exit(duk_context *ctx) {
   exit(duk_require_int(ctx, 0));
@@ -338,6 +339,20 @@ static duk_ret_t nucleus_dofile(duk_context *ctx) {
   return 1;
 }
 
+static const duk_function_list_entry nucleus_functions[] = {
+  {"envkeys", env_keys, 1},
+  {"getenv", env_get, 1},
+  {"setenv", env_set, 2},
+  {"unsetenv", env_unset, 1},
+  {"exit", nucleus_exit, 1},
+  {"compile", nucleus_compile, 2},
+  {"readfile", nucleus_readfile, 1},
+  {"scandir", nucleus_scandir, 2},
+  {"dofile", nucleus_dofile, 1},
+  {"pathjoin", duv_path_join, DUK_VARARGS},
+  {0,0,0}
+};
+
 static void duk_put_nucleus(duk_context *ctx, int argc, char *argv[], int argstart) {
   // nucleus
   duk_push_object(ctx);
@@ -389,25 +404,7 @@ static void duk_put_nucleus(duk_context *ctx, int argc, char *argv[], int argsta
   #endif
   duk_put_prop_string(ctx, -2, "versions");
 
-
-  // nucleus.exit
-  duk_push_c_function(ctx, nucleus_exit, 1);
-  duk_put_prop_string(ctx, -2, "exit");
-  // nucleus.compile
-  duk_push_c_function(ctx, nucleus_compile, 2);
-  duk_put_prop_string(ctx, -2, "compile");
-  // nucleus.readfile
-  duk_push_c_function(ctx, nucleus_readfile, 1);
-  duk_put_prop_string(ctx, -2, "readfile");
-  // nucleus.scandir
-  duk_push_c_function(ctx, nucleus_scandir, 2);
-  duk_put_prop_string(ctx, -2, "scandir");
-  // nucleus.dofile
-  duk_push_c_function(ctx, nucleus_dofile, 1);
-  duk_put_prop_string(ctx, -2, "dofile");
-  // nucleus.pathjoin
-  duk_push_c_function(ctx, duv_path_join, DUK_VARARGS);
-  duk_put_prop_string(ctx, -2, "pathjoin");
+  duk_put_function_list(ctx, -1, nucleus_functions);
 
   // nucleus.uv
   duv_push_module(ctx);

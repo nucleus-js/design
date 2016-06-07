@@ -8,7 +8,7 @@ CC= cc -g
 # Uncomment the following to make a static musl binary on linux
 # CC= musl-gcc -Os -static
 
-nucleus: main.o miniz.o duktape.o duv/duv.a ${LIBUV}/.libs/libuv.a
+nucleus: main.o miniz.o duktape.o duv/duv.a ${LIBUV}/.libs/libuv.a env.o
 	${CC} $^ -lm -lpthread -o $@
 
 test: test-dir test-zip test-app test-app-tiny
@@ -39,6 +39,9 @@ prefix: nucleus
 app.zip: ../../app* ../../app/deps/*
 	rm -f app.zip
 	cd ../../app; zip -9 -r ../implementations/duktape/app.zip .; cd -
+
+env.o: env.c env.h
+	${CC} -std=gnu99 -Wall -Wextra -pedantic -Werror -c $< -o $@
 
 main.o: main.c
 	${CC} -std=gnu99 -Wall -Wextra -pedantic -Werror -c $< -o $@
