@@ -11,6 +11,11 @@ p(uv.Prepare.prototype);
 print("Handle.prototype (via Prepare.prototype)");
 p(Object.getPrototypeOf(uv.Prepare.prototype));
 
+print("\nCheck.prototype");
+p(uv.Check.prototype);
+print("Handle.prototype (via Check.prototype)");
+p(Object.getPrototypeOf(uv.Check.prototype));
+
 print("\nTcp.prototype");
 p(uv.Tcp.prototype);
 print("Stream.prototype (via Tcp.prototype)");
@@ -31,6 +36,12 @@ prepare.start(function () {
   print("prepare...");
 });
 prepare.unref();
+
+var check = new uv.Check();
+check.start(function () {
+  print("check...");
+});
+check.unref();
 
 print("\nTesting simple timeout");
 var timer = new uv.Timer();

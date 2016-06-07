@@ -13,6 +13,9 @@ void duv_on_timeout(uv_timer_t *timer);
 // Prepare method callbacks
 void duv_on_prepare(uv_prepare_t *prepare);
 
+// Check method callbacks
+void duv_on_check(uv_check_t *check);
+
 // Stream method callbacks
 void duv_on_read(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf);
 void duv_on_write(uv_write_t *shutdown, int status);

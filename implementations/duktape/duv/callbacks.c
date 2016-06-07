@@ -23,6 +23,10 @@ void duv_on_prepare(uv_prepare_t *prepare) {
   duv_call_callback((uv_handle_t*)prepare, "\xffon-prepare", 0);
 }
 
+void duv_on_check(uv_check_t *check) {
+  duv_call_callback((uv_handle_t*)check, "\xffon-check", 0);
+}
+
 void duv_on_read(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf) {
   duk_context *ctx = stream->data;
   if (nread >= 0) {
