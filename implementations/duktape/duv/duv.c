@@ -10,6 +10,7 @@
 #include "stream.h"
 #include "tcp.h"
 #include "pipe.h"
+#include "tty.h"
 
 static const duk_function_list_entry duv_handle_methods[] = {
   {"inspect", duv_tostring, 0},
@@ -92,6 +93,12 @@ static const duk_function_list_entry duv_pipe_methods[] = {
   {0,0,0}
 };
 
+static const duk_function_list_entry duv_tty_methods[] = {
+  {"setMode", duv_tty_set_mode, 1},
+  {"getWinsize", duv_tty_get_winsize, 0},
+  {0,0,0}
+};
+
 static const duk_function_list_entry duv_funcs[] = {
   // loop.c
   {"run", duv_run, 0},
@@ -105,23 +112,10 @@ static const duk_function_list_entry duv_funcs[] = {
   {"Async", duv_new_async, 1},
   {"Tcp", duv_new_tcp, 0},
   {"Pipe", duv_new_pipe, 1},
+  {"Tty", duv_new_tty, 2},
 
-  // // pipe.c
-  // {"new_pipe", duv_new_pipe, 1},
-  // {"pipe_open", duv_pipe_open, 2},
-  // {"pipe_bind", duv_pipe_bind, 2},
-  // {"pipe_connect", duv_pipe_connect, 3},
-  // {"pipe_getsockname", duv_pipe_getsockname, 1},
-  // {"pipe_pending_instances", duv_pipe_pending_instances, 2},
-  // {"pipe_pending_count", duv_pipe_pending_count, 1},
-  // {"pipe_pending_type", duv_pipe_pending_type, 1},
-  //
-  // // tty.c
-  // {"new_tty", duv_new_tty, 2},
-  // {"tty_set_mode", duv_tty_set_mode, 2},
-  // {"tty_reset_mode", duv_tty_reset_mode, 0},
-  // {"tty_get_winsize", duv_tty_get_winsize, 1},
-  //
+  {"ttyResetMode", duv_tty_reset_mode, 0},
+
   // // fs.c
   // {"fs_close", duv_fs_close, 2},
   // {"fs_open", duv_fs_open, 4},
@@ -262,32 +256,33 @@ duk_ret_t duv_push_module(duk_context *ctx) {
 
   // uv.Tcp.prototype
   duk_get_prop_string(ctx, -3, "Tcp");
-  // stack: nucleus uv Handle.prototype Stream.prototype Tcp
   duk_push_object(ctx);
   duk_put_function_list(ctx, -1, duv_tcp_methods);
-  // stack: nucleus uv Handle.prototype Stream.prototype Tcp Tcp.prototype
   duk_dup(ctx, -3);
-  // stack: nucleus uv Handle.prototype Stream.prototype Tcp Tcp.prototype Stream.prototype
   duk_set_prototype(ctx, -2);
-  // stack: nucleus uv Handle.prototype Stream.prototype Tcp Tcp.prototype
   duk_put_prop_string(ctx, -2, "prototype");
-  // stack: nucleus uv Handle.prototype Stream.prototype Tcp
   duk_pop(ctx);
 
   // stack: nucleus uv Handle.prototype Stream.prototype
 
   // uv.Pipe.prototype
   duk_get_prop_string(ctx, -3, "Pipe");
-  // stack: nucleus uv Handle.prototype Stream.prototype Pipe
   duk_push_object(ctx);
-  duk_put_function_list(ctx, -1, duv_tcp_methods);
-  // stack: nucleus uv Handle.prototype Stream.prototype Pipe Pipe.prototype
+  duk_put_function_list(ctx, -1, duv_pipe_methods);
   duk_dup(ctx, -3);
-  // stack: nucleus uv Handle.prototype Stream.prototype Pipe Pipe.prototype Stream.prototype
   duk_set_prototype(ctx, -2);
-  // stack: nucleus uv Handle.prototype Stream.prototype Pipe Pipe.prototype
   duk_put_prop_string(ctx, -2, "prototype");
-  // stack: nucleus uv Handle.prototype Stream.prototype Pipe
+  duk_pop(ctx);
+
+  // stack: nucleus uv Handle.prototype Stream.prototype
+
+  // uv.Tty.prototype
+  duk_get_prop_string(ctx, -3, "Tty");
+  duk_push_object(ctx);
+  duk_put_function_list(ctx, -1, duv_tty_methods);
+  duk_dup(ctx, -3);
+  duk_set_prototype(ctx, -2);
+  duk_put_prop_string(ctx, -2, "prototype");
   duk_pop(ctx);
 
   // stack: nucleus uv Handle.prototype Stream.prototype

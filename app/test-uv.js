@@ -37,8 +37,12 @@ p(Object.getPrototypeOf(streamProto));
 print("\nPipe.prototype");
 p(uv.Pipe.prototype);
 print("Stream.prototype (via Pipe.prototype)");
-var streamProto = Object.getPrototypeOf(uv.Pipe.prototype);
-p(streamProto);
+p(Object.getPrototypeOf(uv.Pipe.prototype));
+
+print("\nTty.prototype");
+p(uv.Tty.prototype);
+print("Stream.prototype (via Tty.prototype)");
+p(Object.getPrototypeOf(uv.Tty.prototype));
 
 var prepare = new uv.Prepare();
 prepare.start(function () {
@@ -171,11 +175,6 @@ client.connect("127.0.0.1", 8080, function (err) {
 });
 uv.run();
 
-prepare.close();
-check.close();
-idle.close();
-uv.run();
-
 
 // Use uv.Async to implement nextTick
 var ticks = [];
@@ -196,11 +195,36 @@ function nextTick(callback) {
   ticker.send();
 }
 
-
 print("before");
 nextTick(function () {
   print("tick");
 });
 print("after");
 uv.run();
+
+
+print("Testing stdio with default mode");
+var stdin = new uv.Tty(0, true);
+var stdout = new uv.Tty(1, false);
+p(stdin, stdout, stdin.getWinsize());
+print("Type test, hit enter to send");
+print("Press Control-D to stop test");
+stdin.readStart(function (err, chunk) {
+  if (err) throw err;
+  p("stdin", chunk);
+  if (chunk) {
+    stdout.write(chunk);
+  }
+  else {
+    stdin.readStop();
+  }
+});
+uv.run();
+stdin.close();
+stdout.close();
+
 ticker.close();
+prepare.close();
+check.close();
+idle.close();
+uv.run();
