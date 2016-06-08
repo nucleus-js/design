@@ -473,6 +473,7 @@ int main(int argc, char *argv[]) {
   duk_push_string(ctx, "nucleus.dofile('main.js')");
   if (duk_peval(ctx)) {
     duk_dump_context_stderr(ctx);
+    duk_get_prop_string(ctx, -1, "stack");
     fprintf(stderr, "Uncaught %s\n", duk_safe_to_string(ctx, -1));
     exit(1);
   }
