@@ -1,8 +1,6 @@
 #include "prepare.h"
-#include "utils.h"
-#include "callbacks.h"
 
-duk_ret_t duv_prepare(duk_context *ctx) {
+duk_ret_t duv_new_prepare(duk_context *ctx) {
   uv_prepare_t *prepare = duk_push_fixed_buffer(ctx, sizeof(uv_prepare_t));
   duv_check(ctx, uv_prepare_init(duv_loop(ctx), prepare));
   duv_setup_handle(ctx, (uv_handle_t*)prepare, DUV_PREPARE);

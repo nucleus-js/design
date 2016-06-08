@@ -1,7 +1,4 @@
 #include "handle.h"
-#include "utils.h"
-#include "callbacks.h"
-
 
 duk_ret_t duv_tostring(duk_context *ctx) {
   duk_push_this(ctx);

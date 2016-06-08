@@ -3,7 +3,7 @@
 
 #include "duv.h"
 
-duk_ret_t duv_timer(duk_context *ctx);
+duk_ret_t duv_new_timer(duk_context *ctx);
 duk_ret_t duv_timer_start(duk_context *ctx);
 duk_ret_t duv_timer_stop(duk_context *ctx);
 duk_ret_t duv_timer_again(duk_context *ctx);

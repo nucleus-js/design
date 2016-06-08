@@ -34,6 +34,12 @@ p(streamProto);
 print("Handle.prototype (via Stream.prototype)");
 p(Object.getPrototypeOf(streamProto));
 
+print("\nPipe.prototype");
+p(uv.Pipe.prototype);
+print("Stream.prototype (via Pipe.prototype)");
+var streamProto = Object.getPrototypeOf(uv.Pipe.prototype);
+p(streamProto);
+
 var prepare = new uv.Prepare();
 prepare.start(function () {
   print("prepare...");

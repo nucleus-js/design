@@ -1,8 +1,6 @@
 #include "tcp.h"
-#include "utils.h"
-#include "callbacks.h"
 
-duk_ret_t duv_tcp(duk_context *ctx) {
+duk_ret_t duv_new_tcp(duk_context *ctx) {
   uv_tcp_t *tcp = duk_push_fixed_buffer(ctx, sizeof(uv_tcp_t));
   duv_check(ctx, uv_tcp_init(duv_loop(ctx), tcp));
   duv_setup_handle(ctx, (uv_handle_t*)tcp, DUV_TCP);

@@ -1,5 +1,4 @@
 #include "loop.h"
-#include "utils.h"
 
 duk_ret_t duv_run(duk_context *ctx) {
   int ret = uv_run(duv_loop(ctx), UV_RUN_DEFAULT);

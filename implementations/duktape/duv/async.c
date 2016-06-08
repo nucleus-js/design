@@ -1,8 +1,6 @@
 #include "async.h"
-#include "utils.h"
-#include "callbacks.h"
 
-duk_ret_t duv_async(duk_context *ctx) {
+duk_ret_t duv_new_async(duk_context *ctx) {
   dschema_check(ctx, (const duv_schema_entry[]) {
     {"callback", duk_is_function},
     {0,0}

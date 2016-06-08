@@ -1,6 +1,4 @@
 #include "check.h"
-#include "utils.h"
-#include "callbacks.h"
 
 duk_ret_t duv_new_check(duk_context *ctx) {
   uv_check_t *check = duk_push_fixed_buffer(ctx, sizeof(uv_check_t));

@@ -1,6 +1,4 @@
 #include "stream.h"
-#include "utils.h"
-#include "callbacks.h"
 
 static duk_bool_t duv_is_stream(duk_context *ctx, int index) {
   return duv_is_handle_of(ctx, index, DUV_STREAM_MASK);

@@ -57,4 +57,7 @@ typedef enum {
 // Create a new duv instance with own loop, and push onto duktape context.
 duk_ret_t duv_push_module(duk_context *ctx);
 
+#include "utils.h"
+#include "callbacks.h"
+
 #endif

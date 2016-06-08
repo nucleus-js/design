@@ -310,6 +310,10 @@ TCP handles are used to represent both TCP streams and servers.
 
 `Tcp.prototype` inherits from `Stream.prototype`.
 
+### `new uv.Tcp() → tcp`
+
+Initialize the handle. No socket is created as of yet.
+
 ### `tcp.open(fd)`
 
 Open an existing file descriptor or SOCKET as a TCP handle.
@@ -355,9 +359,67 @@ Establish an IPv4 or IPv6 TCP connection.
 The callback is made when the connection has been established or when a
 connection error happened.
 
-## `uv_pipe_t`
+## `uv_pipe_t` - Pipe handle
 
-*TODO: document this module*
+Pipe handles provide an abstraction over local domain sockets on Unix and named
+pipes on Windows.
+
+`uv_pipe_t` is a ‘subclass’ of `uv_stream_t`.
+
+### `new uv.Pipe(ipc) → pipe`
+
+Initialize a pipe handle. The *ipc* argument is a boolean to indicate if this
+pipe will be used for handle passing between processes.
+
+### `pipe.open(file)`
+
+Open an existing file descriptor or HANDLE as a pipe.
+
+Changed in version 1.2.1: the file descriptor is set to non-blocking mode.
+
+*Note: The passed file descriptor or HANDLE is not checked for its type, but
+it’s required that it represents a valid pipe.*
+
+### `pipe.bind(name)`
+
+Bind the pipe to a file path (Unix) or a name (Windows).
+
+*Note: Paths on Unix get truncated to `sizeof(sockaddr_un.sun_path)` bytes,
+typically between 92 and 108 bytes.*
+
+### `pipe.connect(name, onConnect)`
+
+Connect to the Unix domain socket or the named pipe.
+
+*Note: Paths on Unix get truncated to `sizeof(sockaddr_un.sun_path)` bytes,
+typically between 92 and 108 bytes.*
+
+### `pipe.getsockname() → name`
+
+Get the name of the Unix domain socket or the named pipe.
+
+### `pipe.getpeername() → name`
+
+Get the name of the Unix domain socket or the named pipe to which the handle is
+connected.
+
+### `pipe.pendingInstances(count)`
+
+Set the number of pending pipe instance handles when the pipe server is waiting
+for connections.
+
+*Note: This setting applies to Windows only.*
+
+### `pipe.pendingCount() → count`
+
+Get the pending count.
+
+### `pipe.pendingType() → type`
+
+Used to receive handles over IPC pipes.
+
+First - call `pipe.pendingCount()`, if it’s > 0 then initialize a handle of
+the given type, returned by `pipe.pendingType()` and call `pipe.accept(handle)`.
 
 ## `uv_tty_t`
 

@@ -1,8 +1,6 @@
 #include "timer.h"
-#include "utils.h"
-#include "callbacks.h"
 
-duk_ret_t duv_timer(duk_context *ctx) {
+duk_ret_t duv_new_timer(duk_context *ctx) {
   uv_timer_t *timer = duk_push_fixed_buffer(ctx, sizeof(uv_timer_t));
   duv_check(ctx, uv_timer_init(duv_loop(ctx), timer));
   duv_setup_handle(ctx, (uv_handle_t*)timer, DUV_TIMER);

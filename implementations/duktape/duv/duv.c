@@ -9,6 +9,7 @@
 #include "async.h"
 #include "stream.h"
 #include "tcp.h"
+#include "pipe.h"
 
 static const duk_function_list_entry duv_handle_methods[] = {
   {"inspect", duv_tostring, 0},
@@ -79,8 +80,17 @@ static const duk_function_list_entry duv_tcp_methods[] = {
   {0,0,0}
 };
 
-// // req.c
-// {"cancel", duv_cancel, 1},
+static const duk_function_list_entry duv_pipe_methods[] = {
+  {"open", duv_pipe_open, 1},
+  {"bind", duv_pipe_bind, 1},
+  {"connect", duv_pipe_connect, 2},
+  {"getsockname", duv_pipe_getsockname, 0},
+  {"getpeername", duv_pipe_getpeername, 0},
+  {"pendingInstances", duv_pipe_pending_instances, 1},
+  {"pendingCount", duv_pipe_pending_count, 0},
+  {"pendingType", duv_pipe_pending_type, 0},
+  {0,0,0}
+};
 
 static const duk_function_list_entry duv_funcs[] = {
   // loop.c
@@ -88,12 +98,13 @@ static const duk_function_list_entry duv_funcs[] = {
   {"walk", duv_walk, 1},
 
   // libuv handle constructors
-  {"Timer", duv_timer, 0},
-  {"Prepare", duv_prepare, 0},
+  {"Timer", duv_new_timer, 0},
+  {"Prepare", duv_new_prepare, 0},
   {"Check", duv_new_check, 0},
-  {"Idle", duv_idle, 0},
-  {"Async", duv_async, 1},
-  {"Tcp", duv_tcp, 0},
+  {"Idle", duv_new_idle, 0},
+  {"Async", duv_new_async, 1},
+  {"Tcp", duv_new_tcp, 0},
+  {"Pipe", duv_new_pipe, 1},
 
   // // pipe.c
   // {"new_pipe", duv_new_pipe, 1},
@@ -261,6 +272,22 @@ duk_ret_t duv_push_module(duk_context *ctx) {
   // stack: nucleus uv Handle.prototype Stream.prototype Tcp Tcp.prototype
   duk_put_prop_string(ctx, -2, "prototype");
   // stack: nucleus uv Handle.prototype Stream.prototype Tcp
+  duk_pop(ctx);
+
+  // stack: nucleus uv Handle.prototype Stream.prototype
+
+  // uv.Pipe.prototype
+  duk_get_prop_string(ctx, -3, "Pipe");
+  // stack: nucleus uv Handle.prototype Stream.prototype Pipe
+  duk_push_object(ctx);
+  duk_put_function_list(ctx, -1, duv_tcp_methods);
+  // stack: nucleus uv Handle.prototype Stream.prototype Pipe Pipe.prototype
+  duk_dup(ctx, -3);
+  // stack: nucleus uv Handle.prototype Stream.prototype Pipe Pipe.prototype Stream.prototype
+  duk_set_prototype(ctx, -2);
+  // stack: nucleus uv Handle.prototype Stream.prototype Pipe Pipe.prototype
+  duk_put_prop_string(ctx, -2, "prototype");
+  // stack: nucleus uv Handle.prototype Stream.prototype Pipe
   duk_pop(ctx);
 
   // stack: nucleus uv Handle.prototype Stream.prototype

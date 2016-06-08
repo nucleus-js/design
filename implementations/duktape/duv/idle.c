@@ -1,8 +1,6 @@
 #include "idle.h"
-#include "utils.h"
-#include "callbacks.h"
 
-duk_ret_t duv_idle(duk_context *ctx) {
+duk_ret_t duv_new_idle(duk_context *ctx) {
   uv_idle_t *idle = duk_push_fixed_buffer(ctx, sizeof(uv_idle_t));
   duv_check(ctx, uv_idle_init(duv_loop(ctx), idle));
   duv_setup_handle(ctx, (uv_handle_t*)idle, DUV_IDLE);
