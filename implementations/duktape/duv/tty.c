@@ -20,7 +20,7 @@ duk_ret_t duv_tty_set_mode(duk_context *ctx) {
     {"mode", duk_is_number},
     {0,0}
   });
-  uv_tty_t *tty = duk_push_fixed_buffer(ctx, sizeof(uv_tty_t));
+  uv_tty_t *tty = duv_require_this_handle(ctx, DUV_TTY_MASK);
   duv_check(ctx, uv_tty_set_mode(tty,
     duk_get_int(ctx, 1)
   ));
@@ -28,7 +28,7 @@ duk_ret_t duv_tty_set_mode(duk_context *ctx) {
 }
 
 duk_ret_t duv_tty_get_winsize(duk_context *ctx) {
-  uv_tty_t *tty = duk_push_fixed_buffer(ctx, sizeof(uv_tty_t));
+  uv_tty_t *tty = duv_require_this_handle(ctx, DUV_TTY_MASK);
   int width, height;
   duv_check(ctx, uv_tty_get_winsize(tty, &width, &height));
   duk_push_array(ctx);
