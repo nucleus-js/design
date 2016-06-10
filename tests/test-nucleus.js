@@ -25,5 +25,3 @@ print("\nTest various buffer types");
 p(Duktape.Buffer("test"));
 p(new Duktape.Buffer("test"));
 p(new ArrayBuffer("test"));
-
-nucleus.dofile("test-uv.js");

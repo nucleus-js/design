@@ -17,7 +17,7 @@ install: nucleus
 test: test-dir test-zip test-app test-app-tiny
 
 test-dir: nucleus
-	./nucleus ../../app -- 1 2 3
+	./nucleus ../../tests -- 1 2 3
 
 test-zip: nucleus app.zip
 	./nucleus app.zip -- 4 5 6
@@ -39,9 +39,9 @@ app-tiny: app.zip prefix
 prefix: nucleus
 	echo "#!$(shell pwd)/nucleus --" > prefix
 
-app.zip: ../../app* ../../app/deps/*
+app.zip: ../../tests/* ../../tests/deps/*
 	rm -f app.zip
-	cd ../../app; zip -9 -r ../implementations/duktape/app.zip .; cd -
+	cd ../../tests; zip -9 -r ../implementations/duktape/app.zip .; cd -
 
 env.o: env.c env.h
 	${CC} -std=gnu99 -Wall -Wextra -pedantic -Werror -c $< -o $@
