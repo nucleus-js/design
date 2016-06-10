@@ -22,6 +22,7 @@ static duk_ret_t nucleus_exit(duk_context *ctx) {
 }
 
 static char* base;
+static int baselen;
 static mz_zip_archive zip;
 
 static struct {
@@ -162,7 +163,7 @@ static void canonicalize(duk_context *ctx) {
 static void resolve(duk_context *ctx) {
   duk_require_string(ctx, 0);
   duk_push_c_function(ctx, duv_path_join, DUK_VARARGS);
-  duk_push_string(ctx, base);
+  duk_push_lstring(ctx, base, baselen);
   duk_dup(ctx, 0);
   duk_call(ctx, 2);
   duk_replace(ctx, 0);
@@ -413,17 +414,110 @@ static void duk_put_nucleus(duk_context *ctx, int argc, char *argv[], int argsta
   duk_put_global_string(ctx, "nucleus");
 }
 
+void print_version() {
+  fprintf(stderr, "Nucleus v0.0.0\n");
+}
+
+void print_usage(const char* progname) {
+  print_version();
+  fprintf(stderr, "Usage:\n"
+         "\n"
+         "  %s source -- args...              Run app from source tree\n"
+         "  %s source/custom.js -- args...    Run custom main script\n"
+         "  %s source [-l] [-o target]        Build app\n"
+         "\n"
+         "Options:\n"
+         "\n"
+         "  -v | --version          Print version and exit\n"
+         "  -h | --help             Print help and exit\n"
+         "  -l | --linked           Link runtime instead of embedding\n"
+         "  -o | --output target    Generate output binary at this path\n"
+         "",
+         progname, progname, progname);
+}
+
+void add_zip_dir(const char* path, const char* prefix) {
+  struct dirent *dp;
+  DIR *dir = opendir(path);
+  if (!dir) {
+    printf("path=%s\n", path);
+    perror("Problem reading directory");
+    exit(1);
+  }
+  char fullPath[PATH_MAX * 2];
+  char fullName[PATH_MAX * 2];
+  while ((dp = readdir(dir)) != NULL) {
+    if (strcmp(dp->d_name, ".") && strcmp(dp->d_name, "..")) {
+      snprintf(fullPath, PATH_MAX * 2, "%s/%s", prefix, dp->d_name);
+      switch (dp->d_type) {
+        case DT_DIR:
+          snprintf(fullPath, PATH_MAX * 2, "%s/%s", path, dp->d_name);
+          snprintf(fullName, PATH_MAX * 2, "%s%s/", prefix, dp->d_name);
+          printf("Adding %s\n", fullName);
+          mz_zip_writer_add_mem(&zip, fullName, 0, 0, 0);
+          add_zip_dir(fullPath, fullName);
+          break;
+        case DT_REG: case DT_LNK:
+          snprintf(fullPath, PATH_MAX * 2, "%s/%s", path, dp->d_name);
+          snprintf(fullName, PATH_MAX * 2, "%s%s", prefix, dp->d_name);
+          printf("Adding %s\n", fullName);
+          mz_zip_writer_add_file(&zip, fullPath, fullName, fullPath, 0, 4095);
+          break;
+        default:
+          printf("Skipping %s/%s\n", prefix, dp->d_name);
+          break;
+      }
+    }
+  }
+}
+
+void build_zip(const char* source, const char* target, int linked) {
+  print_version();
+  char nucleus[PATH_MAX*2];
+  size_t nucleus_size = PATH_MAX*2;
+  uv_exepath(nucleus, &nucleus_size);
+  printf("Creating %s\n", target);
+  int outfd = open(target, O_WRONLY | O_CREAT, 0777);
+  if (outfd < 0) {
+    perror("Cannot create target binary");
+    exit(1);
+  }
+  if (linked) {
+    printf("Inserting link to %.*s\n", (int)nucleus_size, nucleus);
+    write(outfd, "#!", 2);
+    write(outfd, nucleus, nucleus_size);
+    write(outfd, " --\n", 1);
+  }
+  else {
+    fprintf(stderr, "TODO: embed nucleus\n");
+    exit(1);
+  }
+  close(outfd);
+  mz_zip_writer_init_file(&zip, target, 1024);
+  add_zip_dir(source, "");
+  exit(1);
+}
+
 int main(int argc, char *argv[]) {
+  uv_setup_args(argc, argv);
   bool isZip = false;
   int argstart = 1;
+  const char* entry = 0;
   // If we detect a zip file appended to self, use it.
   if (mz_zip_reader_init_file(&zip, argv[0], 0)) {
     base = argv[0];
     isZip = true;
   } else {
     int i;
+    int linked = 0;
+    int outIndex = 0;
     for (i = 1; i < argc; i++) {
       if (strcmp(argv[i], "--") == 0) {
+        if (linked || outIndex) {
+          print_usage(argv[0]);
+          fprintf(stderr, "\nCannot pass app args while building app binary.\n");
+          exit(1);
+        }
         i++;
         if (!base && i < argc) {
           base = argv[i++];
@@ -431,19 +525,53 @@ int main(int argc, char *argv[]) {
         break;
       }
       if (argv[i][0] == '-') {
-        fprintf(stderr, "Unknown flag: %s\n", argv[i]);
+        if (!strcmp(argv[i], "-v") || !strcmp(argv[i], "--version")) {
+          print_version();
+          exit(1);
+        }
+        if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
+          print_usage(argv[0]);
+          exit(1);
+        }
+        if (!strcmp(argv[i], "-l") || !strcmp(argv[i], "--linked")) {
+          linked = 1;
+          continue;
+        }
+        if (!strcmp(argv[i], "-o") || !strcmp(argv[i], "--output")) {
+          outIndex = ++i;
+          continue;
+        }
+        print_usage(argv[0]);
+        fprintf(stderr, "\nUnknown flag: %s\n", argv[i]);
         exit(1);
       }
       if (base) {
-        fprintf(stderr, "Unexpected argument: %s\n", argv[i]);
+        print_usage(argv[0]);
+        fprintf(stderr, "\nUnexpected argument: %s\n", argv[i]);
         exit(1);
       }
       base = argv[i];
     }
     if (!base) {
-      fprintf(stderr, "Missing path to app and no embedded zip detected\n");
+      print_usage(argv[0]);
+      fprintf(stderr, "\nMissing path to app and no embedded zip detected\n");
       exit(1);
     }
+    if (linked && !outIndex) {
+      print_usage(argv[0]);
+      fprintf(stderr, "\nLinked option was specified, but not out path was given\n");
+      exit(1);
+    }
+    if (outIndex) {
+      if (!argv[outIndex]) {
+        print_usage(argv[0]);
+        fprintf(stderr, "\nMissing target path for --output option\n");
+        exit(1);
+      }
+      build_zip(base, argv[outIndex], linked);
+      exit(0);
+    }
+
     argstart = i;
 
     if (mz_zip_reader_init_file(&zip, base, 0)) {
@@ -451,7 +579,20 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  const char* originalBase = base;
   base = realpath(base, 0);
+  if (!base) {
+    print_usage(argv[0]);
+    fprintf(stderr, "\nNo such file or directory: %s\n", originalBase);
+    exit(1);
+  }
+  baselen = strlen(base);
+  if (baselen >= 3 && strcmp(base + (baselen - 3), ".js") == 0) {
+    int i = baselen - 1;
+    while (i && base[i] != '/') i--;
+    entry = base + i + 1;
+    baselen = i;
+  }
 
   if (isZip) {
     resource.read = read_from_zip;
@@ -470,7 +611,10 @@ int main(int argc, char *argv[]) {
   duk_put_nucleus(ctx, argc, argv, argstart);
 
   // Run main.js function
-  duk_push_string(ctx, "nucleus.dofile('main.js')");
+  duk_push_string(ctx, "nucleus.dofile('");
+  duk_push_string(ctx, entry ? entry : "main.js");
+  duk_push_string(ctx, "')");
+  duk_concat(ctx, 3);
   if (duk_peval(ctx)) {
     duk_dump_context_stderr(ctx);
     duk_get_prop_string(ctx, -1, "stack");
