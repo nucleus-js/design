@@ -11,6 +11,9 @@ CC= cc -g
 nucleus: main.o miniz.o duktape.o duv/duv.a ${LIBUV}/.libs/libuv.a env.o
 	${CC} $^ -lm -lpthread -o $@
 
+install: nucleus
+	install nucleus /usr/local/bin/
+
 test: test-dir test-zip test-app test-app-tiny
 
 test-dir: nucleus
