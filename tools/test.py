@@ -821,11 +821,11 @@ FLAGS = {
     'debug'   : ['--enable-slow-asserts', '--debug-code', '--verify-heap'],
     'release' : []}
 TIMEOUT_SCALEFACTOR = {
-    'armv6' : { 'debug' : 12, 'release' : 3 },  # The ARM buildbots are slow.
-    'arm'   : { 'debug' :  8, 'release' : 2 },
-    'ia32'  : { 'debug' :  4, 'release' : 1 },
-    'ppc'   : { 'debug' :  4, 'release' : 1 },
-    's390'  : { 'debug' :  4, 'release' : 1 } }
+    'armv6' : { 'debug' : 12, 'release' : 3, 'duktape': 8 },  # The ARM buildbots are slow.
+    'arm'   : { 'debug' :  8, 'release' : 2, 'duktape': 8 },
+    'ia32'  : { 'debug' :  4, 'release' : 1, 'duktape': 8 },
+    'ppc'   : { 'debug' :  4, 'release' : 1, 'duktape': 8 },
+    's390'  : { 'debug' :  4, 'release' : 1, 'duktape': 8 } }
 
 
 class Context(object):
@@ -846,10 +846,7 @@ class Context(object):
     self.repeat = repeat
 
   def GetVm(self, arch, mode):
-    if arch == 'none':
-      name = 'out/Debug/node' if mode == 'debug' else 'out/Release/node'
-    else:
-      name = 'out/%s.%s/node' % (arch, mode)
+    name = 'implementations/%s/nucleus' % (mode)
 
     # Currently GYP does not support output_dir for MSVS.
     # http://code.google.com/p/gyp/issues/detail?id=40
@@ -1581,12 +1578,13 @@ def Main():
         if not exists(vm):
           print "Can't find shell executable: '%s'" % vm
           continue
-        archEngineContext = Execute([vm, "-p", "process.arch"], context)
-        vmArch = archEngineContext.stdout.rstrip()
-        if archEngineContext.exit_code is not 0 or vmArch == "undefined":
-          print "Can't determine the arch of: '%s'" % vm
-          print archEngineContext.stderr.rstrip()
-          continue
+        # archEngineContext = Execute([vm, "-p", "process.arch"], context)
+        # vmArch = archEngineContext.stdout.rstrip()
+        # if archEngineContext.exit_code is not 0 or vmArch == "undefined":
+        #   print "Can't determine the arch of: '%s'" % vm
+        #   print archEngineContext.stderr.rstrip()
+        #   continue
+        vmArch = 'ia32'
         env = {
           'mode': mode,
           'system': utils.GuessOS(),
