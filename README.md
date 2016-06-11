@@ -1,6 +1,16 @@
+# Nucleus
+> a minimal platform-agnostic JS runtime
 
 Nucleus is a specification for a minimal JS runtime that makes it fun to create
 your own platforms.
+
+## Up and Running
+
+To get up and running with Nucleus implementations, check out the [implementations]
+directory. The [duktape `README`] is a great place to start.
+
+[implementations]: tree/master/implementations
+[duktape `README`]: blob/master/implementations/duktape/README.md
 
 ## Command Line Interface
 
