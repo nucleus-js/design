@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#include "rust-path.h"
 
 #include "duktape-releases/src/duktape.h"
 #define MINIZ_HEADER_FILE_ONLY
@@ -22,7 +23,6 @@ static duk_ret_t nucleus_exit(duk_context *ctx) {
 }
 
 static char* base;
-static int baselen;
 static mz_zip_archive zip;
 
 static struct {
@@ -32,121 +32,14 @@ static struct {
   duk_c_function scan;
 } resource;
 
-typedef struct duv_list {
-  const char* part;
-  int offset;
-  int length;
-  struct duv_list* next;
-} duv_list_t;
-
-static duv_list_t* duv_list_node(const char* part, int start, int end, duv_list_t* next) {
-  duv_list_t *node = malloc(sizeof(*node));
-  node->part = part;
-  node->offset = start;
-  node->length = end - start;
-  node->next = next;
-  return node;
-}
 
 static duk_ret_t duv_path_join(duk_context *ctx) {
-  duv_list_t *list = NULL;
-  int absolute = 0;
-
-  // Walk through all the args and split into a linked list
-  // of segments
-  {
-    // Scan backwards looking for the the last absolute positioned path.
-    int top = duk_get_top(ctx);
-    int i = top - 1;
-    while (i > 0) {
-      const char* part = duk_require_string(ctx, i);
-      if (part[0] == '/') break;
-      i--;
-    }
-    for (; i < top; ++i) {
-      const char* part = duk_require_string(ctx, i);
-      int j;
-      int start = 0;
-      int length = strlen(part);
-      if (part[0] == '/') {
-        absolute = 1;
-      }
-      while (start < length && part[start] == 0x2f) { ++start; }
-      for (j = start; j < length; ++j) {
-        if (part[j] == 0x2f) {
-          if (start < j) {
-            list = duv_list_node(part, start, j, list);
-            start = j;
-            while (start < length && part[start] == 0x2f) { ++start; }
-          }
-        }
-      }
-      if (start < j) {
-        list = duv_list_node(part, start, j, list);
-      }
-    }
+  const char* result = duk_get_string(ctx, 0);
+  for (int i = 1; i < duk_get_top(ctx); i++) {
+    const char* str = duk_get_string(ctx, i);
+    result = rust_join(result, str);
   }
-
-  // Run through the list in reverse evaluating "." and ".." segments.
-  {
-    int skip = 0;
-    duv_list_t *prev = NULL;
-    while (list) {
-      duv_list_t *node = list;
-
-      // Ignore segments with "."
-      if (node->length == 1 &&
-          node->part[node->offset] == 0x2e) {
-        goto skip;
-      }
-
-      // Ignore segments with ".." and grow the skip count
-      if (node->length == 2 &&
-          node->part[node->offset] == 0x2e &&
-          node->part[node->offset + 1] == 0x2e) {
-        ++skip;
-        goto skip;
-      }
-
-      // Consume the skip count
-      if (skip > 0) {
-        --skip;
-        goto skip;
-      }
-
-      list = node->next;
-      node->next = prev;
-      prev = node;
-      continue;
-
-      skip:
-        list = node->next;
-        free(node);
-    }
-    list = prev;
-  }
-
-  // Merge the list into a single `/` delimited string.
-  // Free the remaining list nodes.
-  {
-    int count = 0;
-    if (absolute) {
-      duk_push_string(ctx, "/");
-      ++count;
-    }
-    while (list) {
-      duv_list_t *node = list;
-      duk_push_lstring(ctx, node->part + node->offset, node->length);
-      ++count;
-      if (node->next) {
-        duk_push_string(ctx, "/");
-        ++count;
-      }
-      list = node->next;
-      free(node);
-    }
-    duk_concat(ctx, count);
-  }
+  duk_push_string(ctx, result);
   return 1;
 }
 
@@ -163,7 +56,7 @@ static void canonicalize(duk_context *ctx) {
 static void resolve(duk_context *ctx) {
   duk_require_string(ctx, 0);
   duk_push_c_function(ctx, duv_path_join, DUK_VARARGS);
-  duk_push_lstring(ctx, base, baselen);
+  duk_push_string(ctx, base);
   duk_dup(ctx, 0);
   duk_call(ctx, 2);
   duk_replace(ctx, 0);
@@ -586,13 +479,13 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "\nNo such file or directory: %s\n", originalBase);
     exit(1);
   }
-  baselen = strlen(base);
-  if (baselen >= 3 && strcmp(base + (baselen - 3), ".js") == 0) {
-    int i = baselen - 1;
-    while (i && base[i] != '/') i--;
-    entry = base + i + 1;
-    baselen = i;
+  printf("base='%s'\n", base);
+  const char* ext = rust_extension(base);
+  if (ext && !strcmp(ext, "js")) {
+    entry = rust_filename(base);
+    base = (char*)rust_dirname(base);
   }
+  printf("ext='%s' entry='%s' base='%s'\n", ext, entry, base);
 
   if (isZip) {
     resource.read = read_from_zip;

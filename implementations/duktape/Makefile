@@ -8,8 +8,11 @@ CC= cc -g
 # Uncomment the following to make a static musl binary on linux
 # CC= musl-gcc -Os -static
 
-nucleus: main.o miniz.o duktape.o duv/duv.a ${LIBUV}/.libs/libuv.a env.o
-	${CC} $^ -lm -lpthread -o $@
+nucleus: main.o miniz.o duktape.o duv/duv.a ${LIBUV}/.libs/libuv.a env.o rust_path/target/release/libc_path.a
+	${CC} $^ -lm -lpthread -o $@ rust_path/target/release/libc_path.a -ldl
+
+rust_path/target/release/libc_path.a: rust_path/src/lib.rs
+	cd rust_path && cargo build --release
 
 install: nucleus
 	install nucleus /usr/local/bin/
@@ -46,7 +49,7 @@ app.zip: ../../test/manual/* ../../test/manual/deps/*
 env.o: env.c env.h
 	${CC} -std=gnu99 -Wall -Wextra -pedantic -Werror -c $< -o $@
 
-main.o: main.c
+main.o: main.c *.h
 	${CC} -std=gnu99 -Wall -Wextra -pedantic -Werror -c $< -o $@
 
 
@@ -69,7 +72,7 @@ miniz.o: ../../deps/miniz.c
 	${CC} -std=gnu99 -c $< -o $@
 
 clean:
-	rm -f nucleus *.o app.zip app prefix app-tiny
+	rm -rf nucleus *.o app.zip app prefix app-tiny rust_path/target
 	${MAKE} -C duv clean
 
 distclean: clean
