@@ -1,4 +1,4 @@
-var assert = nucleus.dofile("../common.js").assert
+var assert = nucleus.dofile("./common/assert.js")
 
 // get non-existing
 assert(nucleus.getenv('__NUCLEUS_TEST') === null, 'nonexisting env var should be `null`')

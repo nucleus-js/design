@@ -1,4 +1,4 @@
-var assert = nucleus.dofile("../common.js").assert
+var assert = nucleus.dofile("./common/assert.js")
 
 var a = nucleus.compile("return 'a'", 'a')
 assert(a() === 'a', "compile should return 'a'")

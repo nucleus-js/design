@@ -1,4 +1,4 @@
-var assert = nucleus.dofile("../common.js").assert
+var assert = nucleus.dofile("./common/assert.js")
 
 var directory = nucleus.scandir('../fixtures',  dirOnEntry)
 assert(directory === true, 'scandir must see `fixtures` as a directory')

@@ -2,7 +2,7 @@
 // var p = nucleus.dofile("deps/utils.js").prettyPrint;
 // p(p);
 
-var assert = nucleus.dofile("../common.js").assert
+var assert = nucleus.dofile("./common/assert.js")
 
 // Make sure nucleus is an object
 assert(nucleus && typeof nucleus === 'object', '`nucleus` is not an Object')
