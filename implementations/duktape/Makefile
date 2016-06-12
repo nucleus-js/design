@@ -11,7 +11,7 @@ CC= cc -g
 nucleus: main.o miniz.o duktape.o duv/duv.a ${LIBUV}/.libs/libuv.a env.o rust_path/target/release/libc_path.a
 	${CC} $^ -lm -lpthread -o $@ rust_path/target/release/libc_path.a -ldl
 
-rust_path/target/release/libc_path.a: rust_path/src/lib.rs
+rust_path/target/release/libc_path.a: rust_path/src/lib.rs rust_path/src/helpers.rs
 	cd rust_path && cargo build --release
 
 install: nucleus
