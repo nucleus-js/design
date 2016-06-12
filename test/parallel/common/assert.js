@@ -3,6 +3,4 @@ function assert(thing, message) {
   throw new Error(message);
 }
 
-return {
-  assert: assert
-};
+return assert
