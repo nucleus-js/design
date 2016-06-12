@@ -4,11 +4,11 @@ use std::ffi::OsString;
 use std::ptr;
 use std::panic;
 
-pub extern "C" fn build_str_from_c(c_path_string: *const c_char) -> String {
+pub fn build_str_from_c(c_path_string: *const c_char) -> String {
     unsafe { CStr::from_ptr(c_path_string).to_string_lossy().into_owned() }
 }
 
-pub extern "C" fn path_to_str(path: OsString) -> String {
+pub fn path_to_str(path: OsString) -> String {
     path.to_string_lossy().into_owned()
 }
 

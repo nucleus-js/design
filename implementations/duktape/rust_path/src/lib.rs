@@ -5,7 +5,7 @@ use std::path::Path;
 mod helpers;
 
 #[no_mangle]
-pub extern "C" fn rust_join(c_path_string1: *const c_char,
+pub extern fn rust_join(c_path_string1: *const c_char,
                             c_path_string2: *const c_char)
                             -> *const c_char {
     helpers::protect_against_panic(|| {
@@ -21,7 +21,7 @@ pub extern "C" fn rust_join(c_path_string1: *const c_char,
 }
 
 #[no_mangle]
-pub extern "C" fn rust_dirname(c_path_string: *const c_char) -> *const c_char {
+pub extern fn rust_dirname(c_path_string: *const c_char) -> *const c_char {
     helpers::protect_against_panic(|| {
         let path_string = helpers::build_str_from_c(c_path_string);
         let path = Path::new(&path_string);
@@ -33,7 +33,7 @@ pub extern "C" fn rust_dirname(c_path_string: *const c_char) -> *const c_char {
 }
 
 #[no_mangle]
-pub extern "C" fn rust_extension(c_path_string: *const c_char) -> *const c_char {
+pub extern fn rust_extension(c_path_string: *const c_char) -> *const c_char {
     helpers::protect_against_panic(|| {
         let path_string = helpers::build_str_from_c(c_path_string);
         let path = Path::new(&path_string);
@@ -43,7 +43,7 @@ pub extern "C" fn rust_extension(c_path_string: *const c_char) -> *const c_char 
 }
 
 #[no_mangle]
-pub extern "C" fn rust_filename(c_path_string: *const c_char) -> *const c_char {
+pub extern fn rust_filename(c_path_string: *const c_char) -> *const c_char {
     helpers::protect_against_panic(|| {
         let path_string = helpers::build_str_from_c(c_path_string);
         let path = Path::new(&path_string);
