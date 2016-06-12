@@ -41,7 +41,7 @@ prefix: nucleus
 
 app.zip: ../../test/manual/* ../../test/manual/deps/*
 	rm -f app.zip
-	cd ../../tests; zip -9 -r ../implementations/duktape/app.zip .; cd -
+	cd ../../test/manual; zip -9 -r ../../implementations/duktape/app.zip .; cd -
 
 env.o: env.c env.h
 	${CC} -std=gnu99 -Wall -Wextra -pedantic -Werror -c $< -o $@
