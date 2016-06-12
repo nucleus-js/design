@@ -1,8 +1,4 @@
-function assert(thing, message) {
-  if (thing) return
-
-  throw new Error(message)
-}
+var assert = nucleus.dofile("../common.js").assert
 
 var directory = nucleus.scandir('../fixtures',  dirOnEntry)
 assert(directory === true, 'scandir must see `fixtures` as a directory')
