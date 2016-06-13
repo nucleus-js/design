@@ -12,6 +12,11 @@ directory. The [duktape `README`] is a great place to start.
 [implementations]: implementations
 [duktape `README`]: implementations/duktape/README.md
 
+## Running the tests
+
+The test suite can be found in `test`, and can be run with
+`make test-<implementation>`, e.g. `make test-duktape`.
+
 ## Command Line Interface
 
 ```sh
