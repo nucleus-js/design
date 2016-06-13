@@ -4,3 +4,4 @@ app
 app.zip
 app-tiny
 prefix
+/target/

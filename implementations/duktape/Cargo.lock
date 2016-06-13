@@ -1,0 +1,12 @@
+[root]
+name = "nucleus"
+version = "0.1.0"
+dependencies = [
+ "c-path 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "c-path"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+

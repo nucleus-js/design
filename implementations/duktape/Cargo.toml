@@ -1,0 +1,13 @@
+[package]
+name = "nucleus"
+version = "0.1.0"
+authors = [ "Tim Caswell <tim@creationix.com>", 
+            "Jeremiah Senkpiel <fishrock123@rocketmail.com>",
+            "Steve Klabnik <steve@steveklabnik.com>",
+            "Ashley Williams <ashley666ashley@gmail.com>" ]
+
+[dependencies]
+c-path = "0.1.1"
+
+[lib]
+crate-type = ["staticlib"]

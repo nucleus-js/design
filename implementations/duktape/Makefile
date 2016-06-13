@@ -8,11 +8,11 @@ CC= cc -g
 # Uncomment the following to make a static musl binary on linux
 # CC= musl-gcc -Os -static
 
-nucleus: main.o miniz.o duktape.o duv/duv.a ${LIBUV}/.libs/libuv.a env.o rust_path/target/release/libc_path.a
-	${CC} $^ -lm -lpthread -o $@ rust_path/target/release/libc_path.a -ldl
+nucleus: main.o miniz.o duktape.o duv/duv.a ${LIBUV}/.libs/libuv.a env.o target/release/libnucleus.a
+	${CC} $^ -lm -lpthread -o $@ target/release/libnucleus.a
 
-rust_path/target/release/libc_path.a: rust_path/src/lib.rs rust_path/src/helpers.rs
-	cd rust_path && cargo build --release
+target/release/libnucleus.a:
+	cargo build --release
 
 install: nucleus
 	install nucleus /usr/local/bin/
@@ -20,7 +20,7 @@ install: nucleus
 test: test-dir test-zip test-app test-app-tiny
 
 test-dir: nucleus
-	./nucleus ../../test/manual -- 1 2 3
+	./nucleus ../../tests -- 1 2 3
 
 test-zip: nucleus app.zip
 	./nucleus app.zip -- 4 5 6
@@ -42,14 +42,14 @@ app-tiny: app.zip prefix
 prefix: nucleus
 	echo "#!$(shell pwd)/nucleus --" > prefix
 
-app.zip: ../../test/manual/* ../../test/manual/deps/*
+app.zip: ../../tests/* ../../tests/deps/*
 	rm -f app.zip
-	cd ../../test/manual; zip -9 -r ../../implementations/duktape/app.zip .; cd -
+	cd ../../tests; zip -9 -r ../implementations/duktape/app.zip .; cd -
 
 env.o: env.c env.h
 	${CC} -std=gnu99 -Wall -Wextra -pedantic -Werror -c $< -o $@
 
-main.o: main.c *.h
+main.o: main.c
 	${CC} -std=gnu99 -Wall -Wextra -pedantic -Werror -c $< -o $@
 
 
@@ -72,7 +72,7 @@ miniz.o: ../../deps/miniz.c
 	${CC} -std=gnu99 -c $< -o $@
 
 clean:
-	rm -rf nucleus *.o app.zip app prefix app-tiny rust_path/target
+	rm -f nucleus *.o app.zip app prefix app-tiny
 	${MAKE} -C duv clean
 
 distclean: clean
