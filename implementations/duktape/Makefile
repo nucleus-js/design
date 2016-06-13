@@ -17,7 +17,10 @@ rust_path/target/release/libc_path.a: rust_path/src/lib.rs rust_path/src/helpers
 install: nucleus
 	install nucleus /usr/local/bin/
 
-test: test-dir test-zip test-app test-app-tiny
+test:
+	make -C ../.. test-duktape
+
+test-manual: test-dir test-zip test-app test-app-tiny
 
 test-dir: nucleus
 	./nucleus ../../test/manual -- 1 2 3
