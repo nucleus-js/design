@@ -28,6 +28,13 @@ make test
 When you're done building the `nucleus` binary can be used to run and build your
 own tiny JS scripts.
 
+## Testing
+
+Run `make -j4 test`. It will also attempt (re)build if you have not already.
+
+Additionally, there are some manually verified tests. To run these, use
+`make test-manual`.
+
 ## Optimizing for Size
 
 By default the Makefile builds in debug mode with `-g`.  If you want a tiny
