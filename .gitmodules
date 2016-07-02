@@ -1,0 +1,3 @@
+[submodule "implementations/seaduk"]
+	path = implementations/seaduk
+	url = git@github.com:nucleus-js/seaduk.git

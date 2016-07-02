@@ -1,5 +1,5 @@
-test-duktape: duktape
-	tools/test.py --mode=duktape
+test-seaduk: seaduk
+	tools/test.py --mode=seaduk
 
-duktape:
-	make -C implementations/duktape nucleus
+seaduk:
+	make -C implementations/seaduk target/nucleus

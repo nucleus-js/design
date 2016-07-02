@@ -821,11 +821,11 @@ FLAGS = {
     'debug'   : ['--enable-slow-asserts', '--debug-code', '--verify-heap'],
     'release' : []}
 TIMEOUT_SCALEFACTOR = {
-    'armv6' : { 'debug' : 12, 'release' : 3, 'duktape': 8 },  # The ARM buildbots are slow.
-    'arm'   : { 'debug' :  8, 'release' : 2, 'duktape': 8 },
-    'ia32'  : { 'debug' :  4, 'release' : 1, 'duktape': 8 },
-    'ppc'   : { 'debug' :  4, 'release' : 1, 'duktape': 8 },
-    's390'  : { 'debug' :  4, 'release' : 1, 'duktape': 8 } }
+    'armv6' : { 'debug' : 12, 'release' : 3, 'seaduk': 8 },  # The ARM buildbots are slow.
+    'arm'   : { 'debug' :  8, 'release' : 2, 'seaduk': 8 },
+    'ia32'  : { 'debug' :  4, 'release' : 1, 'seaduk': 8 },
+    'ppc'   : { 'debug' :  4, 'release' : 1, 'seaduk': 8 },
+    's390'  : { 'debug' :  4, 'release' : 1, 'seaduk': 8 } }
 
 
 class Context(object):
@@ -846,7 +846,7 @@ class Context(object):
     self.repeat = repeat
 
   def GetVm(self, arch, mode):
-    name = 'implementations/%s/nucleus' % (mode)
+    name = 'implementations/%s/target/nucleus' % (mode)
 
     # Currently GYP does not support output_dir for MSVS.
     # http://code.google.com/p/gyp/issues/detail?id=40
