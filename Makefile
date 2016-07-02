@@ -2,4 +2,7 @@ test-seaduk: seaduk
 	tools/test.py --mode=seaduk
 
 seaduk:
-	make -C implementations/seaduk target/nucleus
+	${MAKE} -C implementations/seaduk target/nucleus
+
+distclean:
+	${MAKE} -C implementations/seaduk distclean
