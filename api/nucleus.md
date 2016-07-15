@@ -61,13 +61,9 @@ A string describing the JS engine. It can contain values like `"duktape"`,
 
 ### nucleus.compile(string, path) -> function
 
-Compiles the `string` into a JavaScript function with a file context of `path`,
-used in generating error stacktraces.
-
-The source is wrapped in `function () { ... }` and run in function mode.
-
-TODO: should add access to other compile modes?  How portable can this be
-between engines?
+Compiles the `string` into a JavaScript function that takes zero arguments and
+returns the last expression.  This is run in global context
+with a file context of `path`, used in generating error stacktraces.
 
 ## Resources
 
