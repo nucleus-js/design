@@ -4,6 +4,8 @@
 Nucleus is a specification for a minimal JS runtime that makes it fun to create
 your own platforms.
 
+**Note**: This repo also uses _[git submodules](https://chrisjean.com/git-submodules-adding-using-removing-and-updating/)_ to manage it's dependencies. As such, cloning this repo must be done with `git clone --depth=1 ...`.
+
 ## Up and Running
 
 To get up and running with Nucleus implementations, check out the [implementations]
