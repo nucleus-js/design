@@ -1,8 +1,4 @@
-function assert(thing, message) {
-  if (thing) return
-
-  throw new Error(message)
-}
+var assert = nucleus.dofile("./common/assert.js")
 
 assert(nucleus.readfile('../fixtures/a.js') === "'a'\n", 'a.js must return it\'s raw source')
 

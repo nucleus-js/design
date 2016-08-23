@@ -1,9 +1,4 @@
-
-function assert(thing, message) {
-  if (thing) return
-
-  throw new Error(message)
-}
+var assert = nucleus.dofile("./common/assert.js")
 
 var a = nucleus.compile("'a'", 'a')
 assert(a() === 'a', "compile should return 'a'")
